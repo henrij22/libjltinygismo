@@ -8,7 +8,7 @@
 
 template <typename Scalar>
 inline void assertSizeAndCopy(const gismo::gsMatrix<Scalar>& fromMat, jlcxx::ArrayRef<Scalar, 2> out) {
-  if (fromMat.rows() * fromMat.cols() != out.size())
+  if (fromMat.rows() * fromMat.cols() != static_cast<int>(out.size()))
     throw std::runtime_error("Output size mismatch, should be " + std::to_string(fromMat.rows()) + "," + std::to_string(fromMat.cols()));
   std::copy(fromMat.data(), fromMat.data() + fromMat.size(), out.data());
 }

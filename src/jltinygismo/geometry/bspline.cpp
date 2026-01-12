@@ -31,8 +31,8 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
   spline.method("knots", [](const BSpline& spline) { return spline.knots(); });
 
   spline.method("insertKnot", [](BSpline& spline, double knot) { spline.insertKnot(knot); });
-  spline.method("insertKnots",
-                [](BSpline& spline, JuliaVector knots) { spline.insertKnots(knots.begin(), knots.end()); });
+  // spline.method("insertKnots",
+  //               [](BSpline& spline, JuliaVector knots) { spline.insertKnots(knots.begin(), knots.end()); });
 
   spline.method(
       "uniformRefine",
