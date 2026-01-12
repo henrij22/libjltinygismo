@@ -21,19 +21,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 
 message(STATUS "Found JlCxx at ${JlCxx_location}")
 
-  # add_library(gismo::gismo UNKNOWN IMPORTED)
-# set_target_properties(gismo::gismo PROPERTIES
-#     IMPORTED_LOCATION
-#       "${gismo_DIR}/../libgismo.so"
-#     INTERFACE_INCLUDE_DIRECTORIES
-#       "${CMAKE_INSTALL_PREFIX}/include/gismo"
-# )
-
 add_library(gismo::gismo INTERFACE IMPORTED)
-
-target_include_directories(gismo::gismo INTERFACE "${gismo_INCLUDE_DIRS}")
-target_link_libraries(gismo::gismo INTERFACE "${gismo_LIBRARIES}")
-
 
 add_subdirectory(src)
 # add_subdirectory(cmake)

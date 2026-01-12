@@ -32,6 +32,12 @@ target_link_libraries(jltinygismo PRIVATE gismo::gismo JlCxx::cxxwrap_julia)
 
 target_compile_features(jltinygismo PRIVATE cxx_std_20)
 
+set_target_properties(jltinygismo PROPERTIES
+  COMPILE_DEFINITIONS gismo_EXPORTS
+  POSITION_INDEPENDENT_CODE ON
+  #LINKER_LANGUAGE C
+  FOLDER "G+Smo modules" )
+
 
 install(
   TARGETS jltinygismo
