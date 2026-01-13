@@ -55,7 +55,7 @@ vec = GismoTest.gsVector{Float64}()
 GismoTest.closestPointTo(geo3, [0.5, 0.6, 0.5], vec)
 GismoTest.toVector(vec)
 
-GismoTest._value(vec, 3)
+GismoTest._value(vec, 2)
 
 GismoTest.toVector(GismoTest.coefAtCorner(geo3, 4))
 
@@ -64,7 +64,7 @@ GismoTest.eval!(geo4, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
 
 GismoTest.toMatrix(evals)
-GismoTest.value(evals, 3, 1)
+GismoTest.value(evals, 2, 1)
 
 boundary = GismoTest.boundary(geo4, 1)
 GismoTest.eval!(boundary[], [0.4], evals)
