@@ -23,6 +23,12 @@ struct WrapMatrix
         throw std::runtime_error("toVector: Matrix is not a vector!");
       return jlcxx::make_julia_array(matrix.data(), matrix.rows());
     });
+
+    matrix.method("toValue", [](Matrix& matrix) {
+      if (matrix.cols() != 1 || matrix.rows() != 1)
+        throw std::runtime_error("toValue: Matrix has more than one entry!");
+      return matrix(0, 0);
+    });
   }
 };
 
@@ -37,7 +43,13 @@ struct WrapVector
 
     matrix.constructor([](int rows) { return new Vector(rows); });
 
-    matrix.method("toVector", [](Vector& matrix) { return jlcxx::make_julia_array(matrix.data(), matrix.rows()); });
+    matrix.method("toVector", [](Vector& vector) { return jlcxx::make_julia_array(vector.data(), vector.rows()); });
+
+    matrix.method("toValue", [](Vector& vector) {
+      if (vector.rows() != 1)
+        throw std::runtime_error("toValue: Vector has more than one entry!");
+      return vector(0);
+    });
   }
 };
 
