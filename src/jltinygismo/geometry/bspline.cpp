@@ -28,9 +28,10 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
       [](const gismo::gsBSplineBasis<>& basis, gismo::gsMatrix<> coefs) { return new BSpline{basis, coefs}; });
 
   // knots
-  spline.method("knots", [](const BSpline& spline) { return spline.knots(); });
+  spline.method("knots", [](const BSpline& spline) { return spline.knots(); }, arg("spline"));
 
-  spline.method("insertKnot", [](BSpline& spline, double knot) { spline.insertKnot(knot); });
+  spline.method("insertKnot", [](BSpline& spline, double knot) { spline.insertKnot(knot); }, arg("spline"),
+                arg("knot"));
 
   spline.method(
       "uniformRefine",
@@ -44,7 +45,7 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
       arg("numKnots") = 1);
 
   // Degree
-  spline.method("degree", [](const BSpline& spline) { return spline.degree(); });
+  spline.method("degree", [](const BSpline& spline) { return spline.degree(); }, arg("spline"));
   spline.method(
       "degreeElevate", [](BSpline& spline, const int i = 1) { spline.degreeElevate(i); }, arg("spline"), arg("i") = 1);
   spline.method(
@@ -58,25 +59,31 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   spline.method("active!", [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
     basis.active_into(wrapVector(u), out);
-  });
+  }, arg("basis"), arg("u"), arg("out"));
 
   spline.method("eval!",
-                [](BSpline& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); });
+                [](BSpline& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); },
+                arg("basis"), arg("u"), arg("out"));
 
   spline.method("deriv!",
-                [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv_into(wrapVector(u), out); });
+                [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv_into(wrapVector(u), out); },
+                arg("spline"), arg("u"), arg("out"));
 
   spline.method("deriv2!",
-                [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv2_into(wrapVector(u), out); });
-  spline.method("_eval", [](BSpline& basis, JuliaVector u) { return basis.eval(wrapVector(u)); });
+                [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv2_into(wrapVector(u), out); },
+                arg("spline"), arg("u"), arg("out"));
+  spline.method("_eval", [](BSpline& basis, JuliaVector u) { return basis.eval(wrapVector(u)); }, arg("basis"),
+                arg("u"));
 
-  spline.method("deriv", [](BSpline& spline, JuliaVector u) { return spline.deriv(wrapVector(u)); });
+  spline.method("deriv", [](BSpline& spline, JuliaVector u) { return spline.deriv(wrapVector(u)); }, arg("spline"),
+                arg("u"));
 
-  spline.method("deriv2", [](BSpline& spline, JuliaVector u) { return spline.deriv2(wrapVector(u)); });
+  spline.method("deriv2", [](BSpline& spline, JuliaVector u) { return spline.deriv2(wrapVector(u)); }, arg("spline"),
+                arg("u"));
 
   // Basis
-  spline.method("basis", [](BSpline& spline) -> gismo::gsBSplineBasis<>& { return spline.basis(); });
-  spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); });
+  spline.method("basis", [](BSpline& spline) -> gismo::gsBSplineBasis<>& { return spline.basis(); }, arg("spline"));
+  spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
 
   spline.method("targetDim", &BSpline::targetDim);
   spline.method("coefDim", &BSpline::coefDim);
@@ -85,21 +92,23 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   spline.method("closestPointTo", [](BSpline& spline, JuliaVector pt, gismo::gsVector<>& result) {
     spline.closestPointTo(wrapVector(pt), result);
-  });
+  }, arg("spline"), arg("pt"), arg("result"));
 
   spline.method("jacobian!", [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) {
     spline.jacobian_into(wrapVector(u), out);
-  });
+  }, arg("spline"), arg("u"), arg("out"));
 
-  spline.method("jacobian", [](BSpline& spline, JuliaVector u) { return spline.jacobian(wrapVector(u)); });
+  spline.method("jacobian", [](BSpline& spline, JuliaVector u) { return spline.jacobian(wrapVector(u)); },
+                arg("spline"), arg("u"));
 
   spline.method("hessian!", [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out, int coord) {
     spline.hessian_into(wrapVector(u), out, coord);
-  });
+  }, arg("spline"), arg("u"), arg("out"), arg("coord"));
 
   spline.method(
       "hessian", [](BSpline& spline, JuliaVector u, int coord = 1) { return spline.hessian(wrapVector(u), coord - 1); },
       arg("spline"), arg("u"), arg("coord") = 1);
 
-  spline.method("coefAtCorner", [](BSpline& spline, int c) { return gismo::gsVector<>{spline.coefAtCorner(c)}; });
+  spline.method("coefAtCorner", [](BSpline& spline, int c) { return gismo::gsVector<>{spline.coefAtCorner(c)}; },
+                arg("spline"), arg("c"));
 }

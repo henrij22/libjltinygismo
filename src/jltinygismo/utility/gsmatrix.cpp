@@ -15,41 +15,80 @@ struct WrapMatrix
 
     matrix.constructor([](int rows, int cols) { return new Matrix(rows, cols); });
 
-    matrix.method("toMatrix",
-                  [](Matrix& matrix) { return jlcxx::make_julia_array(matrix.data(), matrix.rows(), matrix.cols()); });
+    matrix.method(
+        "toMatrix", [](Matrix& matrix) { return jlcxx::make_julia_array(matrix.data(), matrix.rows(), matrix.cols()); },
+        arg("matrix"));
 
-    matrix.method("toVector", [](Matrix& matrix) {
-      if (matrix.cols() != 1)
-        throw std::runtime_error("toVector: Matrix is not a vector!");
-      return jlcxx::make_julia_array(matrix.data(), matrix.rows());
-    });
+    matrix.method(
+        "toVector",
+        [](Matrix& matrix) {
+          if (matrix.cols() != 1)
+            throw std::runtime_error("toVector: Matrix is not a vector!");
+          return jlcxx::make_julia_array(matrix.data(), matrix.rows());
+        },
+        arg("matrix"));
 
-    matrix.method("toValue", [](Matrix& matrix) {
-      if (matrix.cols() != 1 || matrix.rows() != 1)
-        throw std::runtime_error("toValue: Matrix has more than one entry!");
-      return matrix(0, 0);
-    });
+    matrix.method(
+        "toValue",
+        [](Matrix& matrix) {
+          if (matrix.cols() != 1 || matrix.rows() != 1)
+            throw std::runtime_error("toValue: Matrix has more than one entry!");
+          return matrix(0, 0);
+        },
+        arg("matrix"));
+
+    // no bounds-check access
+    matrix.method(
+        "_value", [](Matrix& matrix, int i, int j) { return matrix(i - 1, j - 1); }, arg("matrix"), arg("i"), arg("j"));
+
+    // bounds-check access
+    matrix.method(
+        "value",
+        [](Matrix& matrix, int i, int j) {
+          if (matrix.rows() < i || matrix.cols() < j || i < 1 || j < 1)
+            throw std::runtime_error("value: Index " + std::to_string(i) + ", " + std::to_string(j) + " out-of-bounds");
+          return matrix(i - 1, j - 1);
+        },
+        arg("matrix"), arg("i"), arg("j"));
   }
 };
 
 struct WrapVector
 {
   template <typename VectorT>
-  void operator()(VectorT&& matrix) {
+  void operator()(VectorT&& vector) {
     using jlcxx::arg;
     using jlcxx::julia_base_type;
 
     using Vector = typename VectorT::type;
 
-    matrix.constructor([](int rows) { return new Vector(rows); });
+    vector.constructor([](int rows) { return new Vector(rows); });
 
-    matrix.method("toVector", [](Vector& vector) { return jlcxx::make_julia_array(vector.data(), vector.rows()); });
+    vector.method(
+        "toVector", [](Vector& vector) { return jlcxx::make_julia_array(vector.data(), vector.rows()); },
+        arg("vector"));
 
-    matrix.method("toValue", [](Vector& vector) {
-      if (vector.rows() != 1)
-        throw std::runtime_error("toValue: Vector has more than one entry!");
-      return vector(0);
-    });
+    vector.method(
+        "toValue",
+        [](Vector& vector) {
+          if (vector.rows() != 1)
+            throw std::runtime_error("toValue: Vector has more than one entry!");
+          return vector(0);
+        },
+        arg("vector"));
+
+    // no bounds-check access
+    vector.method("_value", [](Vector& vector, int i) { return vector(i - 1); }, arg("vector"), arg("i"));
+
+    // bounds-check access
+    vector.method(
+        "value",
+        [](Vector& vector, int i) {
+          if (vector.rows() < i)
+            throw std::runtime_error("value: Index " + std::to_string(i) + " out-of-bounds");
+          return vector(i - 1);
+        },
+        arg("vector"), arg("i"));
   }
 };
 
@@ -80,5 +119,5 @@ void registerGsMatrix(jlcxx::Module& mod) {
       .apply<gismo::gsMatrix<double>, gismo::gsMatrix<int>, gismo::gsMatrix<long>>(WrapMatrix());
 
   mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("gsVector")
-      .apply<gismo::gsVector<double>, gismo::gsVector<int>, gismo::gsVector<long>>(WrapMatrix());
+      .apply<gismo::gsVector<double>, gismo::gsVector<int>, gismo::gsVector<long>>(WrapVector());
 }

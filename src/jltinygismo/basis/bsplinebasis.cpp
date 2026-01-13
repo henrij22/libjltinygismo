@@ -39,18 +39,18 @@ struct WrapTensorBSplineBasis
 
     // Knots
     basis.method("knots", [](const Basis& basis, int i = 1) { return basis.knots(i - 1); }, arg("basis"), arg("i") = 1);
-    basis.method("knot", &Basis::knot);
-    basis.method("size", [](const Basis& basis) { return basis.size(); });
+    basis.method("knot", &Basis::knot, arg("basis"), arg("i"));
+    basis.method("size", [](const Basis& basis) { return basis.size(); }, arg("basis"));
     basis.method(
         "numElements", [](const Basis& basis, short_t side = 1) { return basis.numElements(side - 1); }, arg("basis"),
         arg("side") = 1);
 
     // Degree
     if constexpr (n == 1) {
-      basis.method("degree", [](const Basis& basis) { return basis.degree(); });
-      basis.method("order", [](const Basis& basis) { return basis.order(); });
+      basis.method("degree", [](const Basis& basis) { return basis.degree(); }, arg("basis"));
+      basis.method("order", [](const Basis& basis) { return basis.order(); }, arg("basis"));
     } else {
-      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i); });
+      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i); }, arg("basis"), arg("i"));
     }
 
     basis.method(
@@ -81,7 +81,7 @@ struct WrapTensorBSplineBasis
       auto knots2 = std::vector<std::vector<double>>{std::vector<double>(knots.size())};
       std::copy(knots.begin(), knots.end(), knots2.front().begin());
       basis.insertKnots(knots2);
-    });
+    }, arg("basis"), arg("knots"));
 
     basis.method(
         "uniformRefine", [](Basis& basis, double numKnots = 1, int mul = 1) { basis.uniformRefine(numKnots, mul); },
@@ -104,95 +104,104 @@ struct WrapTensorBSplineBasis
 
     // Actives
     basis.method("active!",
-                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<int>& out) { basis.active_into(wrapVector(u), out); });
+                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<int>& out) { basis.active_into(wrapVector(u), out); },
+                 arg("basis"), arg("u"), arg("out"));
 
-    basis.method("isActive", [](Basis& basis, int i, JuliaVector u) { return basis.isActive(i - 1, wrapVector(u)); });
+    basis.method("isActive", [](Basis& basis, int i, JuliaVector u) { return basis.isActive(i - 1, wrapVector(u)); },
+                 arg("basis"), arg("i"), arg("u"));
 
     // Eval
     basis.method("eval!",
-                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); });
-    basis.method("_eval", [](Basis& basis, JuliaVector u) { return basis.eval(wrapVector(u)); });
+                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); },
+                 arg("basis"), arg("u"), arg("out"));
+    basis.method("_eval", [](Basis& basis, JuliaVector u) { return basis.eval(wrapVector(u)); }, arg("basis"),
+                 arg("u"));
 
     basis.method("evalSingle!", [](Basis& basis, int i, JuliaVector u, gismo::gsMatrix<>& out) {
       basis.evalSingle_into(i - 1, wrapVector(u), out);
-    });
+    }, arg("basis"), arg("i"), arg("u"), arg("out"));
 
     basis.method("evalSingle",
-                 [](Basis& basis, int i, JuliaVector u) { return basis.evalSingle(i - 1, wrapVector(u)); });
+                 [](Basis& basis, int i, JuliaVector u) { return basis.evalSingle(i - 1, wrapVector(u)); },
+                 arg("basis"), arg("i"), arg("u"));
 
     basis.method("evalFunc!", [](Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
       basis.evalFunc_into(wrapVector(u), wrapVector(coefs), out);
-    });
+    }, arg("basis"), arg("u"), arg("coefs"), arg("out"));
 
     basis.method("evalFunc!", [](Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
       basis.evalFunc_into(wrapVector(u), wrapMatrix(coefs), out);
-    });
+    }, arg("basis"), arg("u"), arg("coefs"), arg("out"));
 
     basis.method("evalFunc", [](Basis& basis, JuliaVector u, JuliaVector coefs) {
       return basis.evalFunc(wrapVector(u), wrapVector(coefs));
-    });
+    }, arg("basis"), arg("u"), arg("coefs"));
 
     basis.method("evalFunc", [](Basis& basis, JuliaVector u, JuliaMatrix coefs) {
       return basis.evalFunc(wrapVector(u), wrapMatrix(coefs));
-    });
+    }, arg("basis"), arg("u"), arg("coefs"));
 
     // Eval Deriv
     basis.method("deriv!",
-                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<> out) { basis.deriv_into(wrapVector(u), out); });
+                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<> out) { basis.deriv_into(wrapVector(u), out); },
+                 arg("basis"), arg("u"), arg("out"));
 
     basis.method("derivSingle!", [](Basis& basis, int i, JuliaVector u, gismo::gsMatrix<>& out) {
       basis.derivSingle_into(i - 1, wrapVector(u), out);
-    });
+    }, arg("basis"), arg("i"), arg("u"), arg("out"));
 
     basis.method("derivSingle",
-                 [](Basis& basis, int i, JuliaVector u) { return basis.derivSingle(i - 1, wrapVector(u)); });
+                 [](Basis& basis, int i, JuliaVector u) { return basis.derivSingle(i - 1, wrapVector(u)); },
+                 arg("basis"), arg("i"), arg("u"));
 
     if constexpr (n == 1)
       basis.method("deriv!", [](Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
         basis.deriv_into(wrapVector(u), wrapVector(coefs), out);
-      });
+      }, arg("basis"), arg("u"), arg("coefs"), arg("out"));
 
     if constexpr (n == 1)
       basis.method("deriv!", [](Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
         basis.deriv_into(wrapVector(u), wrapMatrix(coefs), out);
-      });
+      }, arg("basis"), arg("u"), arg("coefs"), arg("out"));
 
     basis.method("derivFunc", [](Basis& basis, JuliaVector u, JuliaVector coefs) {
       return basis.derivFunc(wrapVector(u), wrapVector(coefs));
-    });
+    }, arg("basis"), arg("u"), arg("coefs"));
 
     basis.method("derivFunc", [](Basis& basis, JuliaVector u, JuliaMatrix coefs) {
       return basis.derivFunc(wrapVector(u), wrapMatrix(coefs));
-    });
+    }, arg("basis"), arg("u"), arg("coefs"));
 
     // Eval Second Derivative
 
     basis.method("deriv2!",
-                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.deriv2_into(wrapVector(u), out); });
+                 [](Basis& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.deriv2_into(wrapVector(u), out); },
+                 arg("basis"), arg("u"), arg("out"));
 
     basis.method("deriv2Single!", [](Basis& basis, int i, JuliaVector u, gismo::gsMatrix<>& out) {
       basis.deriv2Single_into(i - 1, wrapVector(u), out);
-    });
+    }, arg("basis"), arg("i"), arg("u"), arg("out"));
 
     basis.method("deriv2Single",
-                 [](Basis& basis, int i, JuliaVector u) { return basis.deriv2Single(i - 1, wrapVector(u))(0, 0); });
+                 [](Basis& basis, int i, JuliaVector u) { return basis.deriv2Single(i - 1, wrapVector(u))(0, 0); },
+                 arg("basis"), arg("i"), arg("u"));
 
     if constexpr (n == 1)
       basis.method("deriv2!", [](Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
         basis.deriv2_into(wrapVector(u), wrapVector(coefs), out);
-      });
+      }, arg("basis"), arg("u"), arg("coefs"), arg("out"));
     if constexpr (n == 1)
       basis.method("deriv2!", [](Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
         basis.deriv2_into(wrapVector(u), wrapMatrix(coefs), out);
-      });
+      }, arg("basis"), arg("u"), arg("coefs"), arg("out"));
 
     basis.method("deriv2Func", [](Basis& basis, JuliaVector u, JuliaVector coefs) {
       return basis.deriv2Func(wrapVector(u), wrapVector(coefs));
-    });
+    }, arg("basis"), arg("u"), arg("coefs"));
 
     basis.method("deriv2Func", [](Basis& basis, JuliaVector u, JuliaMatrix coefs) {
       return basis.deriv2Func(wrapVector(u), wrapMatrix(coefs));
-    });
+    }, arg("basis"), arg("u"), arg("coefs"));
 
     // Geometry
     // basis.method("makeGeometry", [](const Basis& basis, JuliaMatrix coefs) {
