@@ -4,8 +4,6 @@
 
 #include <gsNurbs/gsKnotVector.h>
 
-
-
 void registerKnotVector(jlcxx::Module& mod) {
   using jlcxx::arg;
   using jlcxx::julia_base_type;

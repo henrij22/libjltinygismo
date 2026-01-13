@@ -37,12 +37,9 @@ struct WrapVector
 
     matrix.constructor([](int rows) { return new Vector(rows); });
 
-    matrix.method("toVector", [](Vector& matrix) {
-      return jlcxx::make_julia_array(matrix.data(), matrix.rows());
-    });
+    matrix.method("toVector", [](Vector& matrix) { return jlcxx::make_julia_array(matrix.data(), matrix.rows()); });
   }
 };
-
 
 namespace jlcxx {
 

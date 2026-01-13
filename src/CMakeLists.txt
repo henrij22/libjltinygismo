@@ -26,10 +26,14 @@ add_library(jltinygismo SHARED ${JLTINYGISMO_SOURCES})
 set_target_properties(${JLCXX_TARGET} PROPERTIES PUBLIC_HEADER "${JLTINYGISMO_HEADERS}")
 
 target_include_directories(jltinygismo PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_include_directories(jltinygismo PRIVATE ${CMAKE_INSTALL_PREFIX}/include/gismo)
+target_include_directories(jltinygismo PUBLIC ${CMAKE_INSTALL_PREFIX}/include/gismo)
 
-target_link_libraries(jltinygismo PRIVATE gismo JlCxx::cxxwrap_julia)
-target_compile_features(jltinygismo PRIVATE cxx_std_20)
+target_link_libraries(jltinygismo PUBLIC gismo JlCxx::cxxwrap_julia)
+target_compile_features(jltinygismo PUBLIC cxx_std_20)
+
+if(UNIX AND NOT APPLE)
+   target_link_libraries(jltinygismo PUBLIC dl)
+endif(UNIX AND NOT APPLE)
 
 install(
   TARGETS jltinygismo

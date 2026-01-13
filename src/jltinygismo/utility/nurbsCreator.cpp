@@ -41,7 +41,8 @@ void registerNurbsCreatorFunctions(jlcxx::Module& mod) {
   // // Nurbs Arc Trapezium (corner points)
   // mod.method(
   //     "createNurbsArcTrapezium",
-  //     [](double Ax, double Ay, double Bx, double By, double Cx, double Cy, double Dx, double Dy, double turndeg = 0) {
+  //     [](double Ax, double Ay, double Bx, double By, double Cx, double Cy, double Dx, double Dy, double turndeg = 0)
+  //     {
   //       return *gismo::gsNurbsCreator<>::NurbsArcTrapezium(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, turndeg);
   //     },
   //     arg("Ax"), arg("Ay"), arg("Bx"), arg("By"), arg("Cx"), arg("Cy"), arg("Dx"), arg("Dy"), arg("turndeg") = 0);
