@@ -93,9 +93,11 @@ struct WrapTensorBSpline
 
     spline.method(
         "active!",
-        [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) { basis.active_into(wrapVector(u), out); },
+        [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+          basis.active_into(wrapVector(u), out);
+          incrementByOne(out);
+        },
         arg("basis"), arg("u"), arg("out"));
-
     {
       spline.method(
           "eval!", [](BSpline& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); },

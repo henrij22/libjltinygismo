@@ -59,7 +59,10 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   spline.method(
       "active!",
-      [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) { basis.active_into(wrapVector(u), out); },
+      [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+        basis.active_into(wrapVector(u), out);
+        incrementByOne(out);
+      },
       arg("basis"), arg("u"), arg("out"));
 
   spline.method(
@@ -84,7 +87,7 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   // Basis
   spline.method("basis", [](BSpline& spline) -> gismo::gsBSplineBasis<>& { return spline.basis(); }, arg("spline"));
-  spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c ); }, arg("spline"), arg("c"));
+  spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
   spline.method("numCoefs", [](BSpline& spline) { spline.numCoefs(); }, arg("spline"));
 
   spline.method("targetDim", &BSpline::targetDim);

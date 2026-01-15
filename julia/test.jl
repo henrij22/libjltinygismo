@@ -37,6 +37,10 @@ basis2 = GismoTest.TensorBSplineBasis{2}(kv, kv)
 GismoTest.eval!(basis2, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
 
+actives = GismoTest.gsMatrix{Int32}()
+GismoTest.active!(basis2, [0.1, 0.1], actives)
+GismoTest.toMatrix(actives)
+
 geo2 = GismoTest.TensorBSpline{2}(basis2, randn(16, 3))
 GismoTest.eval!(geo2, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)

@@ -117,11 +117,17 @@ struct WrapTensorBSplineBasis
     // Actives
     basis.method(
         "active!",
-        [](Basis& basis, JuliaVector u, gismo::gsMatrix<int>& out) { basis.active_into(wrapVector(u), out); },
+        [](Basis& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+          basis.active_into(wrapVector(u), out);
+          incrementByOne(out);
+        },
         arg("basis"), arg("u"), arg("out"));
 
     basis.method(
-        "isActive", [](Basis& basis, int i, JuliaVector u) { return basis.isActive(i - 1, wrapVector(u)); },
+        "isActive",
+        [](Basis& basis, int i, JuliaVector u) {
+          return basis.isActive(i - 1, wrapVector(u));
+        },
         arg("basis"), arg("i"), arg("u"));
 
     if constexpr (n == 1)
@@ -131,8 +137,9 @@ struct WrapTensorBSplineBasis
           "numActive", [](Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
           arg("u"));
       basis.method(
-          "numActive!", [](Basis& basis, JuliaVector u, gismo::gsVector<int>& out) { basis.numActive_into(wrapVector(u), out); }, arg("basis"),
-          arg("u"));
+          "numActive!",
+          [](Basis& basis, JuliaVector u, gismo::gsVector<int>& out) { basis.numActive_into(wrapVector(u), out); },
+          arg("basis"), arg("u"));
     }
     // Eval
     basis.method(
