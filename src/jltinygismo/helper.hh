@@ -5,6 +5,7 @@
 #include <gsNurbs/gsKnotVector.h>
 #include <gsEigen/Eigen>
 #include <string>
+#include <algorithm>
 
 template <typename Scalar>
 inline void assertSizeAndCopy(const gismo::gsMatrix<Scalar>& fromMat, jlcxx::ArrayRef<Scalar, 2> out) {
@@ -32,9 +33,9 @@ inline auto wrapMatrix(jlcxx::ArrayRef<Scalar, 2> mat) {
 
 template <typename Scalar>
 inline void incrementByOne(gismo::gsMatrix<Scalar>& mat) {
-  std::ranges::for_each(mat.reshaped(), [](auto& i) { i += 1; });
+  std::for_each(mat.reshaped().begin(), mat.reshaped().end(), [](auto& i) { i += 1; });
 }
 template <typename Scalar>
 inline void incrementByOne(gismo::gsVector<Scalar>& vec) {
-  std::ranges::for_each(vec, [](auto& i) { i += 1; });
+  std::for_each(vec.begin(), vec.end(), [](auto& i) { i += 1; });
 }
