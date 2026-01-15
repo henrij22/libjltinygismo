@@ -4,7 +4,13 @@ module GismoTest
     using CxxWrap
     @wrapmodule(() -> joinpath(path_to_lib, "libjltinygismo"))
 
+
+    function __init__()
+        return @initcxx
+    end
+
     BSplineBasis(args...) = BSplineBasis{1}(args...)
+
 end
 
 using .GismoTest
@@ -27,11 +33,15 @@ evals = GismoTest.gsMatrix{Float64}()
 GismoTest.eval!(geo, [0.4], evals)
 GismoTest.toMatrix(evals)
 
-basis2 = GismoTest.TensorBSplineBasis{2}(kv, kv )
+basis2 = GismoTest.TensorBSplineBasis{2}(kv, kv)
 GismoTest.eval!(basis2, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
 
-geo2 = GismoTest.TensorBSpline{2}(basis2, randn(16,3))
+actives = GismoTest.gsMatrix{Int32}()
+GismoTest.active!(basis2, [0.1, 0.1], actives)
+GismoTest.toMatrix(actives)
+
+geo2 = GismoTest.TensorBSpline{2}(basis2, randn(16, 3))
 GismoTest.eval!(geo2, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
 
@@ -40,7 +50,7 @@ corners = [
     1.0 0.0 0.0
     1.0 1.0 0.0
     0.0 1.0 0.0
-    ]
+]
 geo3 = GismoTest.TensorBSpline{2}(corners, kv, kv)
 GismoTest.eval!(geo3, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
@@ -49,16 +59,30 @@ vec = GismoTest.gsVector{Float64}()
 GismoTest.closestPointTo(geo3, [0.5, 0.6, 0.5], vec)
 GismoTest.toVector(vec)
 
+GismoTest._value(vec, 2)
+
 GismoTest.toVector(GismoTest.coefAtCorner(geo3, 4))
 
 geo4 = GismoTest.createBSplineRectangle()
 GismoTest.eval!(geo4, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
 
+GismoTest.toMatrix(evals)
+GismoTest.value(evals, 2, 1)
 
 boundary = GismoTest.boundary(geo4, 1)
 GismoTest.eval!(boundary[], [0.4], evals)
 
+
+basis = GismoTest.BSplineBasis(kv)
+coefs = randn(4, 1)
+spline = GismoTest.BSpline(basis, coefs)
+
+result = GismoTest._eval(basis, [0.4])
+
+result = GismoTest.gsMatrix{Float64}()
+using BenchmarkTools
+@benchmark GismoTest.evalFunc!($basis, $[0.4], $coefs, $result)
 
 nothing
 # GismoTest.degreeIncrease(basis, 1)
@@ -95,4 +119,3 @@ nothing
 
 # GismoTest.deriv!(basis, [0.4], randn(4), evals)
 # GismoTest.toJulia(evals)
-
