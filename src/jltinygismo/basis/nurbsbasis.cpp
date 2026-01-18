@@ -58,10 +58,6 @@ struct WrapTensorNURBSBasis
       basis.method(
           "insertKnot", [](Basis& basis, double knot, int mult = 1) { basis.insertKnot(knot, mult); }, arg("basis"),
           arg("knot"), arg("mult") = 1);
-
-      basis.method(
-          "insertKnots", [](Basis& basis, JuliaVector knots) { basis.insertKnots(knots.begin(), knots.end()); },
-          arg("basis"), arg("knots"));
     }
 
     /*
