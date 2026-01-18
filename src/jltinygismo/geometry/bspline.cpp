@@ -16,16 +16,13 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   auto spline = mod.add_type<BSpline>("BSpline", geo.dt());
 
-  spline.constructor([](const gismo::gsBSplineBasis<>& basis, JuliaVector coefs) {
-    gsEigen::Map<const gsEigen::VectorXd> coefsMat(coefs.data(), coefs.size());
-    return new BSpline{basis, coefsMat};
-  });
+  spline.constructor(
+      [](const gismo::gsBSplineBasis<>& basis, JuliaVector coefs) { return new BSpline{basis, wrapVector(coefs)}; });
 
   spline.constructor(
       [](const gismo::gsBSplineBasis<>& basis, JuliaMatrix coefs) { return new BSpline{basis, wrapMatrix(coefs)}; });
 
-  spline.constructor(
-      [](const gismo::gsBSplineBasis<>& basis, gismo::gsMatrix<> coefs) { return new BSpline{basis, coefs}; });
+  spline.method("numCoefs", &BSpline::numCoefs, arg("spline"));
 
   // knots
   spline.method("knots", [](const BSpline& spline) { return spline.knots(); }, arg("spline"));
@@ -65,60 +62,10 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
       },
       arg("basis"), arg("u"), arg("out"));
 
-  spline.method(
-      "eval!", [](BSpline& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); },
-      arg("basis"), arg("u"), arg("out"));
-
-  spline.method(
-      "deriv!", [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv_into(wrapVector(u), out); },
-      arg("spline"), arg("u"), arg("out"));
-
-  spline.method(
-      "deriv2!", [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv2_into(wrapVector(u), out); },
-      arg("spline"), arg("u"), arg("out"));
-  spline.method(
-      "_eval", [](BSpline& basis, JuliaVector u) { return basis.eval(wrapVector(u)); }, arg("basis"), arg("u"));
-
-  spline.method(
-      "deriv", [](BSpline& spline, JuliaVector u) { return spline.deriv(wrapVector(u)); }, arg("spline"), arg("u"));
-
-  spline.method(
-      "deriv2", [](BSpline& spline, JuliaVector u) { return spline.deriv2(wrapVector(u)); }, arg("spline"), arg("u"));
-
   // Basis
   spline.method("basis", [](BSpline& spline) -> gismo::gsBSplineBasis<>& { return spline.basis(); }, arg("spline"));
   spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
   spline.method("numCoefs", [](BSpline& spline) { spline.numCoefs(); }, arg("spline"));
-
-  spline.method("targetDim", &BSpline::targetDim);
-  spline.method("coefDim", &BSpline::coefDim);
-  spline.method("geoDim", &BSpline::geoDim);
-  spline.method("parDim", &BSpline::parDim);
-
-  spline.method(
-      "closestPointTo",
-      [](BSpline& spline, JuliaVector pt, gismo::gsVector<>& result) { spline.closestPointTo(wrapVector(pt), result); },
-      arg("spline"), arg("pt"), arg("result"));
-
-  spline.method(
-      "jacobian!",
-      [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.jacobian_into(wrapVector(u), out); },
-      arg("spline"), arg("u"), arg("out"));
-
-  spline.method(
-      "jacobian", [](BSpline& spline, JuliaVector u) { return spline.jacobian(wrapVector(u)); }, arg("spline"),
-      arg("u"));
-
-  spline.method(
-      "hessian!",
-      [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out, int coord) {
-        spline.hessian_into(wrapVector(u), out, coord);
-      },
-      arg("spline"), arg("u"), arg("out"), arg("coord"));
-
-  spline.method(
-      "hessian", [](BSpline& spline, JuliaVector u, int coord = 1) { return spline.hessian(wrapVector(u), coord - 1); },
-      arg("spline"), arg("u"), arg("coord") = 1);
 
   /*
       enum corner { southwestfront = 1, southeastfront = 2, northwestfront = 3, northeastfront = 4,
@@ -130,3 +77,13 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
       "coefAtCorner", [](BSpline& spline, int c) { return gismo::gsVector<>{spline.coefAtCorner(c)}; }, arg("spline"),
       arg("c"));
 }
+
+namespace jlcxx {
+
+template <>
+struct SuperType<gismo::gsBSpline<>>
+{
+  using type = gismo::gsGeometry<>;
+};
+
+} // namespace jlcxx

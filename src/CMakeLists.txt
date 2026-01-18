@@ -11,13 +11,18 @@ file(GLOB_RECURSE JLTINYGISMO_HEADERS ${JLTINYGISMO_INCLUDE_DIR}/*.hh)
 # Explicitly list the source files
 set(JLTINYGISMO_SOURCES
     ${JLTINYGISMO_SOURCE_DIR}/gismo.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/basis/gsBasis.cpp
     ${JLTINYGISMO_SOURCE_DIR}/basis/bsplinebasis.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/basis/nurbsbasis.cpp
     ${JLTINYGISMO_SOURCE_DIR}/basis/knotvector.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/bspline.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/geometry/nurbs.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/tensorbspline.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/geometry/tensornurbs.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/gsGeometry.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/gsmatrix.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/nurbsCreator.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/utility/filereader.cpp
 )
 
 

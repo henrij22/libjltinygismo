@@ -98,116 +98,11 @@ struct WrapTensorBSpline
           incrementByOne(out);
         },
         arg("basis"), arg("u"), arg("out"));
-    {
-      spline.method(
-          "eval!", [](BSpline& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.eval_into(wrapVector(u), out); },
-          arg("basis"), arg("u"), arg("out"));
 
-      spline.method(
-          "deriv!",
-          [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv_into(wrapVector(u), out); },
-          arg("spline"), arg("u"), arg("out"));
-
-      spline.method(
-          "deriv2!",
-          [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.deriv2_into(wrapVector(u), out); },
-          arg("spline"), arg("u"), arg("out"));
-      spline.method(
-          "_eval", [](BSpline& basis, JuliaVector u) { return basis.eval(wrapVector(u)); }, arg("basis"), arg("u"));
-
-      spline.method(
-          "deriv", [](BSpline& spline, JuliaVector u) { return spline.deriv(wrapVector(u)); }, arg("spline"), arg("u"));
-
-      spline.method(
-          "deriv2", [](BSpline& spline, JuliaVector u) { return spline.deriv2(wrapVector(u)); }, arg("spline"),
-          arg("u"));
-    }
-    {
-      spline.method(
-          "eval!", [](BSpline& basis, JuliaMatrix u, gismo::gsMatrix<>& out) { basis.eval_into(wrapMatrix(u), out); },
-          arg("basis"), arg("u"), arg("out"));
-
-      spline.method(
-          "deriv!",
-          [](BSpline& spline, JuliaMatrix u, gismo::gsMatrix<>& out) { spline.deriv_into(wrapMatrix(u), out); },
-          arg("spline"), arg("u"), arg("out"));
-
-      spline.method(
-          "deriv2!",
-          [](BSpline& spline, JuliaMatrix u, gismo::gsMatrix<>& out) { spline.deriv2_into(wrapMatrix(u), out); },
-          arg("spline"), arg("u"), arg("out"));
-      spline.method(
-          "_eval", [](BSpline& basis, JuliaMatrix u) { return basis.eval(wrapMatrix(u)); }, arg("basis"), arg("u"));
-
-      spline.method(
-          "deriv", [](BSpline& spline, JuliaMatrix u) { return spline.deriv(wrapMatrix(u)); }, arg("spline"), arg("u"));
-
-      spline.method(
-          "deriv2", [](BSpline& spline, JuliaMatrix u) { return spline.deriv2(wrapMatrix(u)); }, arg("spline"),
-          arg("u"));
-    }
     // Basis
     spline.method(
         "basis", [](BSpline& spline) -> gismo::gsTensorBSplineBasis<n>& { return spline.basis(); }, arg("spline"));
     spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
-
-    spline.method("targetDim", &BSpline::targetDim);
-    spline.method("coefDim", &BSpline::coefDim);
-    spline.method("geoDim", &BSpline::geoDim);
-    spline.method("parDim", &BSpline::parDim);
-
-    spline.method(
-        "closestPointTo",
-        [](BSpline& spline, JuliaVector pt, gismo::gsVector<>& result) {
-          spline.closestPointTo(wrapVector(pt), result);
-        },
-        arg("spline"), arg("pt"), arg("result"));
-
-    spline.method(
-        "coefAtCorner", [](BSpline& spline, int c) { return gismo::gsVector<>{spline.coefAtCorner(c)}; }, arg("spline"),
-        arg("c"));
-    {
-      spline.method(
-          "jacobian!",
-          [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out) { spline.jacobian_into(wrapVector(u), out); },
-          arg("spline"), arg("u"), arg("out"));
-
-      spline.method(
-          "jacobian", [](BSpline& spline, JuliaVector u) { return spline.jacobian(wrapVector(u)); }, arg("spline"),
-          arg("u"));
-
-      spline.method(
-          "hessian!",
-          [](BSpline& spline, JuliaVector u, gismo::gsMatrix<>& out, int coord) {
-            spline.hessian_into(wrapVector(u), out, coord - 1);
-          },
-          arg("spline"), arg("u"), arg("out"), arg("coord"));
-
-      spline.method(
-          "hessian", [](BSpline& spline, JuliaVector u, int coord) { return spline.hessian(wrapVector(u), coord - 1); },
-          arg("spline"), arg("u"), arg("coord"));
-    }
-    {
-      spline.method(
-          "jacobian!",
-          [](BSpline& spline, JuliaMatrix u, gismo::gsMatrix<>& out) { spline.jacobian_into(wrapMatrix(u), out); },
-          arg("spline"), arg("u"), arg("out"));
-
-      spline.method(
-          "jacobian", [](BSpline& spline, JuliaMatrix u) { return spline.jacobian(wrapMatrix(u)); }, arg("spline"),
-          arg("u"));
-
-      spline.method(
-          "hessian!",
-          [](BSpline& spline, JuliaMatrix u, gismo::gsMatrix<>& out, int coord) {
-            spline.hessian_into(wrapMatrix(u), out, coord - 1);
-          },
-          arg("spline"), arg("u"), arg("out"), arg("coord"));
-
-      spline.method(
-          "hessian", [](BSpline& spline, JuliaMatrix u, int coord) { return spline.hessian(wrapMatrix(u), coord - 1); },
-          arg("spline"), arg("u"), arg("coord"));
-    }
   }
 };
 
@@ -218,6 +113,12 @@ struct BuildParameterList<gismo::gsTensorBSpline<Val, T>>
 {
   // Using long to map to Julia Int64
   using type = ParameterList<std::integral_constant<long, Val>, T>;
+};
+
+template <int n>
+struct SuperType<gismo::gsTensorBSpline<n>>
+{
+  using type = gismo::gsGeometry<>;
 };
 
 } // namespace jlcxx
