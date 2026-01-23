@@ -112,7 +112,7 @@ template <int Val, typename T>
 struct BuildParameterList<gismo::gsTensorBSpline<Val, T>>
 {
   // Using long to map to Julia Int64
-  using type = ParameterList<std::integral_constant<long, Val>, T>;
+  using type = ParameterList<std::integral_constant<int64_t, Val>, T>;
 };
 
 template <int n>

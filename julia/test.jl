@@ -24,6 +24,9 @@ basis = GismoTest.BSplineBasis(kv)
 GismoTest.size(basis)
 GismoTest.elementIndex(basis, [0.4])
 
+GismoTest.TensorBSplineBasis{2}(kv, kv)
+
+methods(GismoTest.BSplineBasis{Int64(2)})
 # basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
 # GismoTest.size(basis)
 # GismoTest.elementIndex(basis, [0.4, 0.8])
