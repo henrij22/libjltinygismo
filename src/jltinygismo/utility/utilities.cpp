@@ -50,6 +50,10 @@ struct WrapMatrix
           return matrix(i - 1, j - 1);
         },
         arg("matrix"), arg("i"), arg("j"));
+
+    matrix.method("size", &Matrix::size);
+    matrix.method("rows", &Matrix::rows);
+    matrix.method("cols", &Matrix::cols);
   }
 };
 
@@ -89,6 +93,10 @@ struct WrapVector
           return vector(i - 1);
         },
         arg("vector"), arg("i"));
+
+    vector.method("size", &Vector::size);
+    vector.method("rows", &Vector::rows);
+    vector.method("cols", &Vector::cols);
   }
 };
 

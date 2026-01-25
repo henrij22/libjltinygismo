@@ -73,7 +73,7 @@ struct WrapTensorNURBSBasis
     if constexpr (n == 1)
       basis.method("degree", [](const Basis& basis) { return basis.degree(); }, arg("basis"));
     else
-      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i); }, arg("basis"), arg("i"));
+      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i-1); }, arg("basis"), arg("i"));
 
     // Actives
     if constexpr (n == 1)

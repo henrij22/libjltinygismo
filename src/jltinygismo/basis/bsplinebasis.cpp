@@ -59,7 +59,7 @@ struct WrapTensorBSplineBasis
       basis.method("degree", [](const Basis& basis) { return basis.degree(); }, arg("basis"));
       basis.method("order", [](const Basis& basis) { return basis.order(); }, arg("basis"));
     } else {
-      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i); }, arg("basis"), arg("i"));
+      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i - 1); }, arg("basis"), arg("i"));
     }
 
     // Refinement
