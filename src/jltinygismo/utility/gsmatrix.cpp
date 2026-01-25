@@ -111,7 +111,7 @@ struct BuildParameterList<gismo::gsVector<T, _Rows, _Options>>
 
 } // namespace jlcxx
 
-void registerGsMatrix(jlcxx::Module& mod) {
+void registerUtilities(jlcxx::Module& mod) {
   using jlcxx::arg;
   using jlcxx::julia_base_type;
 
@@ -120,4 +120,11 @@ void registerGsMatrix(jlcxx::Module& mod) {
 
   mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("gsVector")
       .apply<gismo::gsVector<double>, gismo::gsVector<int>, gismo::gsVector<long>>(WrapVector());
+
+  using KnotSpan = gismo::gsDomainIteratorWrapper<>;
+  auto knotSpan  = mod.add_type<KnotSpan>("KnotSpan");
+
+  knotSpan.method("centerPoint", &KnotSpan::centerPoint);
+  knotSpan.method("upperCorner", &KnotSpan::upperCorner);
+  knotSpan.method("lowerCorner", &KnotSpan::lowerCorner);
 }

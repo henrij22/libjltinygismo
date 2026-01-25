@@ -178,5 +178,14 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
       },
       arg("basis"), arg("coefs"), arg("numKnots") = 1, arg("mul") = 1);
 
+  // elements
+  basis.method("knotSpans", [](Basis& basis) {
+    jlcxx::Array<gismo::gsDomainIteratorWrapper<>> elements{};
+    for (auto it = basis.domain()->beginAll(); it != basis.domain()->endAll(); ++it) {
+      elements.push_back(it); // Construct wrapper from iterator
+    }
+    return elements;
+  });
+
   return basis;
 }

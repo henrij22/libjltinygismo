@@ -24,6 +24,11 @@ basis = GismoTest.BSplineBasis(kv)
 GismoTest.size(basis)
 GismoTest.elementIndex(basis, [0.4])
 
+
+ks = GismoTest.knotSpans(basis)[1]
+
+GismoTest.lowerCorner(ks)
+
 GismoTest.TensorBSplineBasis{2}(kv, kv)
 
 methods(GismoTest.BSplineBasis{Int64(2)})

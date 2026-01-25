@@ -8,7 +8,7 @@
 #include <gsCore/gsBasis.h>
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
-  registerGsMatrix(mod);
+  registerUtilities(mod);
 
   registerKnotVector(mod);
   auto gsBasis = registerBasis(mod);
