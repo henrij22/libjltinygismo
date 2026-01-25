@@ -37,21 +37,21 @@ struct WrapTensorNurbs
     });
 
     nurbs.constructor(
-        [](const gismo::gsTensorNurbsBasis<n>& basis, gismo::gsMatrix<> coefs) { return new Nurbs{basis, coefs}; });
+        [](const gismo::gsTensorNurbsBasis<n>& basis, gismo::gsMatrix<>& coefs) { return new Nurbs{basis, coefs}; });
 
     if constexpr (n == 2)
-      nurbs.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsMatrix<> coefs) {
+      nurbs.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsMatrix<>& coefs) {
         return new Nurbs{kv1, kv2, coefs};
       });
 
     if constexpr (n == 3)
       nurbs.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsKnotVector<>& kv3,
-                           gismo::gsMatrix<> coefs) { return new Nurbs{kv1, kv2, kv3, coefs}; });
+                           gismo::gsMatrix<>& coefs) { return new Nurbs{kv1, kv2, kv3, coefs}; });
 
     if constexpr (n == 4)
       nurbs.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsKnotVector<>& kv3,
                            gismo::gsKnotVector<>& kv4,
-                           gismo::gsMatrix<> coefs) { return new Nurbs{kv1, kv2, kv3, kv4, coefs}; });
+                           gismo::gsMatrix<>& coefs) { return new Nurbs{kv1, kv2, kv3, kv4, coefs}; });
 
     // knots
     nurbs.method("knots", [](const Nurbs& nurbs, int i) { return nurbs.knots(i - 1); }, arg("nurbs"), arg("i"));

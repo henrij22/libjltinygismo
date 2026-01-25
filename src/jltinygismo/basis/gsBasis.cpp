@@ -108,7 +108,7 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
 
   // Eval Deriv
   basis.method(
-      "deriv!", [](Basis& basis, JuliaVector u, gismo::gsMatrix<> out) { basis.deriv_into(wrapVector(u), out); },
+      "deriv!", [](Basis& basis, JuliaVector u, gismo::gsMatrix<>& out) { basis.deriv_into(wrapVector(u), out); },
       arg("basis"), arg("u"), arg("out"));
 
   basis.method(

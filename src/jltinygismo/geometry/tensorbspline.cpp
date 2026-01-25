@@ -37,21 +37,21 @@ struct WrapTensorBSpline
     });
 
     spline.constructor(
-        [](const gismo::gsTensorBSplineBasis<n>& basis, gismo::gsMatrix<> coefs) { return new BSpline{basis, coefs}; });
+        [](const gismo::gsTensorBSplineBasis<n>& basis, gismo::gsMatrix<>& coefs) { return new BSpline{basis, coefs}; });
 
     if constexpr (n == 2)
-      spline.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsMatrix<> coefs) {
+      spline.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsMatrix<>& coefs) {
         return new BSpline{kv1, kv2, coefs};
       });
 
     if constexpr (n == 3)
       spline.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsKnotVector<>& kv3,
-                            gismo::gsMatrix<> coefs) { return new BSpline{kv1, kv2, kv3, coefs}; });
+                            gismo::gsMatrix<>& coefs) { return new BSpline{kv1, kv2, kv3, coefs}; });
 
     if constexpr (n == 4)
       spline.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsKnotVector<>& kv3,
                             gismo::gsKnotVector<>& kv4,
-                            gismo::gsMatrix<> coefs) { return new BSpline{kv1, kv2, kv3, kv4, coefs}; });
+                            gismo::gsMatrix<>& coefs) { return new BSpline{kv1, kv2, kv3, kv4, coefs}; });
 
     // corner is 4x3
     spline.constructor([](JuliaMatrix corner, const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2) {
