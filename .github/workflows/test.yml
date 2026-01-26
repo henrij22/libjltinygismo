@@ -1,0 +1,123 @@
+name: Test jlTinyGismo
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+
+jobs:
+  build-gismo:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+           
+      - name: Check gismo cache
+        uses: actions/cache@v4
+        id: gismo-cache
+        with:
+          path: /tmp/gismo-install
+          key: gismo-v25.07.0-${{ runner.os }}
+          restore-keys: |
+            gismo-v25.07.0-${{ runner.os }}
+      
+      - name: Install system dependencies
+        if: steps.gismo-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            wget \
+            libopenblas-dev \
+            liblapack-dev \
+            libboost-all-dev
+      
+      - name: Download gismo release
+        if: steps.gismo-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/gismo-build
+          cd /tmp/gismo-build
+          git clone --depth 1 --branch v25.07.0 https://github.com/gismo/gismo.git gismo-src
+      
+      - name: Build gismo
+        if: steps.gismo-cache.outputs.cache-hit != 'true'
+        run: |
+          cd /tmp/gismo-build/gismo-src
+          mkdir -p build
+          cd build
+          
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/tmp/gismo-install \
+            -DGISMO_BUILD_LIB=ON \
+            -DGISMO_WITH_MKDE=OFF \
+            -DGISMO_WITH_OPENMP=ON
+          
+          cmake --build . --config Release --parallel 4
+          cmake --install .
+
+  test:
+    needs: build-gismo
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ['1.11', '1.12', 'pre']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            libopenblas-dev \
+            liblapack-dev \
+            libboost-all-dev
+      
+      - name: Download gismo installation
+        uses: actions/cache@v4
+        with:
+          path: /tmp/gismo-install
+          key: gismo-v25.07.0-${{ runner.os }}
+          restore-keys: |
+            gismo-v25.07.0-${{ runner.os }}
+      
+      - name: Set up Julia ${{ matrix.julia-version }}
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia-version }}
+      
+      - name: Install Julia dependencies
+        run: |
+          julia -e 'using Pkg; Pkg.add("CxxWrap")'
+      
+      - name: Get CxxWrap prefix path
+        id: cxxwrap
+        run: |
+          CXXWRAP_PREFIX=$(julia -e 'using CxxWrap; println(CxxWrap.prefix_path())')
+          echo "prefix=$CXXWRAP_PREFIX" >> $GITHUB_OUTPUT
+          echo "CxxWrap prefix path: $CXXWRAP_PREFIX"
+      
+      - name: Build libjltinygismo for Julia ${{ matrix.julia-version }}
+        run: |
+          mkdir -p build
+          cd build
+          
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="/tmp/gismo-install;${{ steps.cxxwrap.outputs.prefix }}"
+          
+          cmake --build . --config Release --parallel 4
+      
+      - name: Run Julia tests
+        env:
+          LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/build/lib:$LD_LIBRARY_PATH
+        run: |
+          julia julia/run_tests.jl "${{ github.workspace }}/build/lib"
