@@ -12,6 +12,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+           
+      - name: Check gismo cache
+        uses: actions/cache@v4
+        id: gismo-cache
+        with:
+          path: /tmp/gismo-install
+          key: gismo-v25.07.0-${{ runner.os }}
+          restore-keys: |
+            gismo-v25.07.0-${{ runner.os }}
       
       - name: Install system dependencies
         run: |
@@ -24,16 +33,6 @@ jobs:
             libopenblas-dev \
             liblapack-dev \
             libboost-all-dev
-      
-      - name: Check gismo cache
-        uses: actions/cache@v4
-        id: gismo-cache
-        with:
-          path: /tmp/gismo-install
-          key: gismo-v25.07.0-${{ runner.os }}
-          restore-keys: |
-            gismo-v25.07.0-${{ runner.os }}
-      
       - name: Download gismo release
         if: steps.gismo-cache.outputs.cache-hit != 'true'
         run: |
@@ -88,7 +87,7 @@ jobs:
             gismo-v25.07.0-${{ runner.os }}
       
       - name: Set up Julia ${{ matrix.julia-version }}
-        uses: julia-actions/setup-julia@v1
+        uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia-version }}
       
