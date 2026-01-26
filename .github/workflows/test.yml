@@ -23,6 +23,7 @@ jobs:
             gismo-v25.07.0-${{ runner.os }}
       
       - name: Install system dependencies
+        if: steps.gismo-cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -33,6 +34,7 @@ jobs:
             libopenblas-dev \
             liblapack-dev \
             libboost-all-dev
+      
       - name: Download gismo release
         if: steps.gismo-cache.outputs.cache-hit != 'true'
         run: |
@@ -61,6 +63,7 @@ jobs:
     needs: build-gismo
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         julia-version: ['1.11', '1.12', 'pre']
     
@@ -109,14 +112,12 @@ jobs:
           
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH="/tmp/gismo-install;${{ steps.cxxwrap.outputs.prefix }}" \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install-${{ matrix.julia-version }}
+            -DCMAKE_PREFIX_PATH="/tmp/gismo-install;${{ steps.cxxwrap.outputs.prefix }}"
           
           cmake --build . --config Release --parallel 4
-          cmake --install .
       
       - name: Run Julia tests
         env:
-          LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/install-${{ matrix.julia-version }}/lib:$LD_LIBRARY_PATH
+          LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/build/lib:$LD_LIBRARY_PATH
         run: |
-          julia julia/run_tests.jl "${{ github.workspace }}/install-${{ matrix.julia-version }}"
+          julia julia/run_tests.jl "${{ github.workspace }}/build"
