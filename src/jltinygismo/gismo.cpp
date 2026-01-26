@@ -22,5 +22,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   registerTensorNurbs(mod, gsGeometry);
 
   registerNurbsCreatorFunctions(mod);
+  registerNurbsTransformFunctions(mod);
   registerFileReaderFunctions(mod);
+  registerParaviewFunctions(mod);
 }

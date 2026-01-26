@@ -23,6 +23,7 @@ set(JLTINYGISMO_SOURCES
     ${JLTINYGISMO_SOURCE_DIR}/utility/utilities.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/nurbsCreator.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/filereader.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/utility/paraview.cpp
 )
 
 

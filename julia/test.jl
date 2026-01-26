@@ -29,7 +29,9 @@ ks = GismoTest.knotSpans(basis)[1]
 
 GismoTest.lowerCorner(ks)
 
-GismoTest.TensorBSplineBasis{2}(kv, kv)
+basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
+
+# GismoTest.writeParaview(basis, "basis")
 
 methods(GismoTest.BSplineBasis{Int64(2)})
 # basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
