@@ -120,4 +120,4 @@ jobs:
         env:
           LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/build/lib:$LD_LIBRARY_PATH
         run: |
-          julia julia/run_tests.jl "${{ github.workspace }}/build"
+          julia julia/run_tests.jl "${{ github.workspace }}/build/lib"
