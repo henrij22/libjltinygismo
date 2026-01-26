@@ -201,12 +201,12 @@ void registerNurbsTransformFunctions(jlcxx::Module& mod) {
       },
       arg("geo"), arg("turndeg") = 0, arg("Tx") = 0, arg("Ty") = 0);
 
-  mod.method(
-      "rotate3D!",
-      [](gismo::gsGeometry<double>& geo, double phi_z = 0, double phi_y = 0, double phi_x = 0) {
-        gismo::gsNurbsCreator<>::rotate3D(geo, phi_z, phi_y, phi_x);
-      },
-      arg("geo"), arg("phi_z") = 0, arg("phi_y") = 0, arg("phi_x") = 0);
+  // mod.method(
+  //     "rotate3D!",
+  //     [](gismo::gsGeometry<double>& geo, double phi_z = 0, double phi_y = 0, double phi_x = 0) {
+  //       gismo::gsNurbsCreator<>::rotate3D(geo, phi_z, phi_y, phi_x);
+  //     },
+  //     arg("geo"), arg("phi_z") = 0, arg("phi_y") = 0, arg("phi_x") = 0);
 
   // Shifting helpers
   mod.method(
