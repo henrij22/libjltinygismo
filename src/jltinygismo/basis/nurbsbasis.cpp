@@ -56,7 +56,7 @@ struct WrapTensorNURBSBasis
     if constexpr (n == 1) {
       // Refinement
       basis.method(
-          "insertKnot", [](Basis& basis, double knot, int mult = 1) { basis.insertKnot(knot, mult); }, arg("basis"),
+          "insertKnot!", [](Basis& basis, double knot, int mult = 1) { basis.insertKnot(knot, mult); }, arg("basis"),
           arg("knot"), arg("mult") = 1);
     }
 
@@ -73,18 +73,20 @@ struct WrapTensorNURBSBasis
     if constexpr (n == 1)
       basis.method("degree", [](const Basis& basis) { return basis.degree(); }, arg("basis"));
     else
-      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i-1); }, arg("basis"), arg("i"));
+      basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i - 1); }, arg("basis"), arg("i"));
 
     // Actives
     if constexpr (n == 1)
-      basis.method("numActive", [](Basis& basis) { return basis.numActive(); }, arg("basis"), arg("u"));
+      basis.method("numActive", [](const Basis& basis) { return basis.numActive(); }, arg("basis"), arg("u"));
     else {
       basis.method(
-          "numActive", [](Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
+          "numActive", [](const Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
           arg("u"));
       basis.method(
           "numActive!",
-          [](Basis& basis, JuliaVector u, gismo::gsVector<int>& out) { basis.numActive_into(wrapVector(u), out); },
+          [](const Basis& basis, JuliaVector u, gismo::gsVector<int>& out) {
+            basis.numActive_into(wrapVector(u), out);
+          },
           arg("basis"), arg("u"));
     }
 

@@ -185,6 +185,7 @@ void registerNurbsCreatorFunctions(jlcxx::Module& mod) {
 // register transformation helpers (no multipatch variants)
 void registerNurbsTransformFunctions(jlcxx::Module& mod) {
   using jlcxx::arg;
+  using JuliaVector = jlcxx::ArrayRef<double, 1>;
 
   // Rotation helpers
   mod.method(
@@ -243,8 +244,9 @@ void registerNurbsTransformFunctions(jlcxx::Module& mod) {
 
   mod.method(
       "scale2DVec",
-      [](const gismo::gsTensorBSpline<2, double>& geo, const std::vector<double>& factors) {
-        return *gismo::gsNurbsCreator<>::scale2D(geo, factors);
+      [](const gismo::gsTensorBSpline<2, double>& geo, JuliaVector factors) {
+        std::vector<double> factorsVec(factors.begin(), factors.end());
+        return *gismo::gsNurbsCreator<>::scale2D(geo, factorsVec);
       },
       arg("geo"), arg("factors"));
 
@@ -255,8 +257,9 @@ void registerNurbsTransformFunctions(jlcxx::Module& mod) {
 
   mod.method(
       "scale2DVec!",
-      [](gismo::gsGeometry<double>& geo, const std::vector<double>& factors) {
-        gismo::gsNurbsCreator<>::scale2D(geo, factors);
+      [](gismo::gsGeometry<double>& geo, JuliaVector factors) {
+        std::vector<double> factorsVec(factors.begin(), factors.end());
+        gismo::gsNurbsCreator<>::scale2D(geo, factorsVec);
       },
       arg("geo"), arg("factors"));
 }

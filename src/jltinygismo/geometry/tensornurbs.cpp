@@ -57,49 +57,50 @@ struct WrapTensorNurbs
     nurbs.method("knots", [](const Nurbs& nurbs, int i) { return nurbs.knots(i - 1); }, arg("nurbs"), arg("i"));
 
     // nurbs.method("weight", [](Nurbs& nurbs, int i) { return nurbs.weight(i - 1); }, arg("nurbs"), arg("i"));
-    nurbs.method("weights", [](Nurbs& nurbs) { return nurbs.weights(); }, arg("nurbs"));
+    nurbs.method("weights", [](const Nurbs& nurbs) { return nurbs.weights(); }, arg("nurbs"));
 
     nurbs.method(
-        "insertKnot", [](Nurbs& nurbs, double knot, int dir, int mul = 1) { nurbs.insertKnot(knot, dir - 1, mul); },
+        "insertKnot!", [](Nurbs& nurbs, double knot, int dir, int mul = 1) { nurbs.insertKnot(knot, dir - 1, mul); },
         arg("nurbs"), arg("knot"), arg("dir"), arg("mul") = 1);
 
     nurbs.method(
-        "uniformRefine",
+        "uniformRefine!",
         [](Nurbs& nurbs, int numKnots = 1, int mul = 1, const int dir = 0) {
           nurbs.uniformRefine(numKnots, mul, dir - 1);
         },
         arg("nurbs"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = 0);
 
     nurbs.method(
-        "uniformCoarsen", [](Nurbs& nurbs, int numKnots = 1) { nurbs.uniformCoarsen(numKnots); }, arg("nurbs"),
+        "uniformCoarsen!", [](Nurbs& nurbs, int numKnots = 1) { nurbs.uniformCoarsen(numKnots); }, arg("nurbs"),
         arg("numKnots") = 1);
 
     // Degree
     nurbs.method("degree", [](const Nurbs& nurbs, int i) { return nurbs.degree(i - 1); }, arg("nurbs"), arg("i"));
     nurbs.method(
-        "degreeElevate", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeElevate(i, dir - 1); }, arg("basis"),
+        "degreeElevate!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeElevate(i, dir - 1); }, arg("basis"),
         arg("i") = 1, arg("dir") = 0);
     nurbs.method(
-        "degreeReduce", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeReduce(i, dir - 1); }, arg("basis"),
+        "degreeReduce!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeReduce(i, dir - 1); }, arg("basis"),
         arg("i") = 1, arg("dir") = 0);
     nurbs.method(
-        "degreeIncrease", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeIncrease(i, dir - 1); }, arg("basis"),
+        "degreeIncrease!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeIncrease(i, dir - 1); }, arg("basis"),
         arg("i") = 1, arg("dir") = 0);
     nurbs.method(
-        "degreeDecrease", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeDecrease(i, dir - 1); }, arg("basis"),
+        "degreeDecrease!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeDecrease(i, dir - 1); }, arg("basis"),
         arg("i") = 1, arg("dir") = 0);
 
     nurbs.method(
         "active!",
-        [](Nurbs& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+        [](const Nurbs& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
           basis.active_into(wrapVector(u), out);
           incrementByOne(out);
         },
         arg("basis"), arg("u"), arg("out"));
 
     // Basis
-    nurbs.method("basis", [](Nurbs& nurbs) -> gismo::gsTensorNurbsBasis<n>& { return nurbs.basis(); }, arg("nurbs"));
-    nurbs.method("boundary", [](Nurbs& nurbs, int c) { return nurbs.boundary(c); }, arg("nurbs"), arg("c"));
+    nurbs.method(
+        "basis", [](const Nurbs& nurbs) -> const gismo::gsTensorNurbsBasis<n>& { return nurbs.basis(); }, arg("nurbs"));
+    nurbs.method("boundary", [](const Nurbs& nurbs, int c) { return nurbs.boundary(c); }, arg("nurbs"), arg("c"));
   }
 };
 

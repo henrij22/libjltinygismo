@@ -25,42 +25,42 @@ void registerNurbs(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<doub
   // knots
   nurbs.method("knots", [](const Nurbs& nurbs) { return nurbs.knots(); }, arg("nurbs"));
 
-  nurbs.method("weight", [](Nurbs& nurbs, int i) { return nurbs.weight(i - 1); }, arg("nurbs"), arg("i"));
-  nurbs.method("weights", [](Nurbs& nurbs) { return nurbs.weights(); }, arg("nurbs"));
+  nurbs.method("weight", [](const Nurbs& nurbs, int i) { return nurbs.weight(i - 1); }, arg("nurbs"), arg("i"));
+  nurbs.method("weights", [](const Nurbs& nurbs) { return nurbs.weights(); }, arg("nurbs"));
 
-  nurbs.method("insertKnot", [](Nurbs& nurbs, double knot) { nurbs.insertKnot(knot); }, arg("nurbs"), arg("knot"));
+  nurbs.method("insertKnot!", [](Nurbs& nurbs, double knot) { nurbs.insertKnot(knot); }, arg("nurbs"), arg("knot"));
 
   nurbs.method(
-      "uniformRefine",
+      "uniformRefine!",
       [](Nurbs& nurbs, int numKnots = 1, int mul = 1, const int dir = -1) { nurbs.uniformRefine(numKnots, mul, dir); },
       arg("nurbs"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = -1);
 
   nurbs.method(
-      "uniformCoarsen", [](Nurbs& nurbs, int numKnots = 1) { nurbs.uniformCoarsen(numKnots); }, arg("nurbs"),
+      "uniformCoarsen!", [](Nurbs& nurbs, int numKnots = 1) { nurbs.uniformCoarsen(numKnots); }, arg("nurbs"),
       arg("numKnots") = 1);
 
   // Degree
   nurbs.method("degree", [](const Nurbs& nurbs) { return nurbs.degree(); }, arg("nurbs"));
   nurbs.method(
-      "degreeElevate", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeElevate(i); }, arg("nurbs"), arg("i") = 1);
+      "degreeElevate!", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeElevate(i); }, arg("nurbs"), arg("i") = 1);
   nurbs.method(
-      "degreeReduce", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeReduce(i); }, arg("nurbs"), arg("i") = 1);
+      "degreeReduce!", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeReduce(i); }, arg("nurbs"), arg("i") = 1);
   nurbs.method(
-      "degreeIncrease", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeIncrease(i); }, arg("nurbs"), arg("i") = 1);
+      "degreeIncrease!", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeIncrease(i); }, arg("nurbs"), arg("i") = 1);
   nurbs.method(
-      "degreeDecrease", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeDecrease(i); }, arg("nurbs"), arg("i") = 1);
+      "degreeDecrease!", [](Nurbs& nurbs, const int i = 1) { nurbs.degreeDecrease(i); }, arg("nurbs"), arg("i") = 1);
 
   nurbs.method(
       "active!",
-      [](Nurbs& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+      [](const Nurbs& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
         basis.active_into(wrapVector(u), out);
         incrementByOne(out);
       },
       arg("basis"), arg("u"), arg("out"));
 
   // Basis
-  nurbs.method("basis", [](Nurbs& nurbs) -> gismo::gsNurbsBasis<>& { return nurbs.basis(); }, arg("nurbs"));
-  nurbs.method("boundary", [](Nurbs& nurbs, int c) { return nurbs.boundary(c); }, arg("nurbs"), arg("c"));
+  nurbs.method("basis", [](const Nurbs& nurbs) -> const gismo::gsNurbsBasis<>& { return nurbs.basis(); }, arg("nurbs"));
+  nurbs.method("boundary", [](const Nurbs& nurbs, int c) { return nurbs.boundary(c); }, arg("nurbs"), arg("c"));
 
   /*
       enum corner { southwestfront = 1, southeastfront = 2, northwestfront = 3, northeastfront = 4,
@@ -69,7 +69,7 @@ void registerNurbs(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<doub
   };
   */
   nurbs.method(
-      "coefAtCorner", [](Nurbs& nurbs, int c) { return gismo::gsVector<>{nurbs.coefAtCorner(c)}; }, arg("nurbs"),
+      "coefAtCorner", [](const Nurbs& nurbs, int c) { return gismo::gsVector<>{nurbs.coefAtCorner(c)}; }, arg("nurbs"),
       arg("c"));
 }
 

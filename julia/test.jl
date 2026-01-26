@@ -114,7 +114,7 @@ using BenchmarkTools
 @benchmark GismoTest.evalFunc!($basis, $[0.4], $coefs, $result)
 
 nothing
-GismoTest.degreeIncrease(basis, 1)
+GismoTest.degreeIncrease!(basis, 1)
 GismoTest.elevateContinuity(basis, 1)
 GismoTest.degreeIncrease(basis, 1)
 

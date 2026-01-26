@@ -52,7 +52,7 @@ struct WrapTensorBSplineBasis
         arg("basis"), arg("side") = 0);
 
     if constexpr (n > 1)
-      basis.method("numTotalElements", &Basis::numTotalElements);
+      basis.method("numTotalElements", [](const Basis& basis) { return basis.numTotalElements(); }, arg("basis"));
 
     // Degree
     if constexpr (n == 1) {
@@ -64,15 +64,15 @@ struct WrapTensorBSplineBasis
 
     // Refinement
     basis.method(
-        "insertKnot", [](Basis& basis, double knot, int mult = 1) { basis.insertKnot(knot, mult); }, arg("basis"),
+        "insertKnot!", [](Basis& basis, double knot, int mult = 1) { basis.insertKnot(knot, mult); }, arg("basis"),
         arg("knot"), arg("mult") = 1);
 
     basis.method(
-        "removeKnot", [](Basis& basis, double knot, int mult = 1) { basis.removeKnot(knot, mult); }, arg("basis"),
+        "removeKnot!", [](Basis& basis, double knot, int mult = 1) { basis.removeKnot(knot, mult); }, arg("basis"),
         arg("knot"), arg("mult") = 1);
 
     basis.method(
-        "insertKnots",
+        "insertKnots!",
         [](Basis& basis, JuliaVector knots) {
           auto knots2 = std::vector<std::vector<double>>{std::vector<double>(knots.size())};
           std::copy(knots.begin(), knots.end(), knots2.front().begin());
@@ -82,24 +82,25 @@ struct WrapTensorBSplineBasis
 
     // Actives
     if constexpr (n == 1)
-      basis.method("numActive", [](Basis& basis) { return basis.numActive(); }, arg("basis"), arg("u"));
+      basis.method("numActive", [](const Basis& basis) { return basis.numActive(); }, arg("basis"), arg("u"));
     else {
       basis.method(
-          "numActive", [](Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
+          "numActive", [](const Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
           arg("u"));
       basis.method(
           "numActive!",
-          [](Basis& basis, JuliaVector u, gismo::gsVector<int>& out) { basis.numActive_into(wrapVector(u), out); },
+          [](const Basis& basis, JuliaVector u, gismo::gsVector<int>& out) {
+            basis.numActive_into(wrapVector(u), out);
+          },
           arg("basis"), arg("u"));
       basis.method("component", [](const Basis& basis, int i) { return basis.component(i - 1); }, arg("i"));
-      basis.method("component", [](Basis& basis, int i) { return basis.component(i - 1); }, arg("i"));
     }
 
     // First Derivative
     if constexpr (n == 1)
       basis.method(
           "deriv!",
-          [](Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
+          [](const Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
             basis.deriv_into(wrapVector(u), wrapVector(coefs), out);
           },
           arg("basis"), arg("u"), arg("coefs"), arg("out"));
@@ -107,7 +108,7 @@ struct WrapTensorBSplineBasis
     if constexpr (n == 1)
       basis.method(
           "deriv!",
-          [](Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
+          [](const Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
             basis.deriv_into(wrapVector(u), wrapMatrix(coefs), out);
           },
           arg("basis"), arg("u"), arg("coefs"), arg("out"));
@@ -116,14 +117,14 @@ struct WrapTensorBSplineBasis
     if constexpr (n == 1)
       basis.method(
           "deriv2!",
-          [](Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
+          [](const Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
             basis.deriv2_into(wrapVector(u), wrapVector(coefs), out);
           },
           arg("basis"), arg("u"), arg("coefs"), arg("out"));
     if constexpr (n == 1)
       basis.method(
           "deriv2!",
-          [](Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
+          [](const Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
             basis.deriv2_into(wrapVector(u), wrapMatrix(coefs), out);
           },
           arg("basis"), arg("u"), arg("coefs"), arg("out"));

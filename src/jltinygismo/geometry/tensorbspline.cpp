@@ -36,8 +36,9 @@ struct WrapTensorBSpline
       return new BSpline{basis, wrapMatrix(coefs)};
     });
 
-    spline.constructor(
-        [](const gismo::gsTensorBSplineBasis<n>& basis, gismo::gsMatrix<>& coefs) { return new BSpline{basis, coefs}; });
+    spline.constructor([](const gismo::gsTensorBSplineBasis<n>& basis, gismo::gsMatrix<>& coefs) {
+      return new BSpline{basis, coefs};
+    });
 
     if constexpr (n == 2)
       spline.constructor([](const gismo::gsKnotVector<>& kv1, gismo::gsKnotVector<>& kv2, gismo::gsMatrix<>& coefs) {
@@ -62,38 +63,39 @@ struct WrapTensorBSpline
     spline.method("knots", [](const BSpline& spline, int i) { return spline.knots(i - 1); }, arg("spline"), arg("i"));
 
     spline.method(
-        "insertKnot", [](BSpline& spline, double knot, int dir, int mul = 1) { spline.insertKnot(knot, dir - 1, mul); },
+        "insertKnot!",
+        [](BSpline& spline, double knot, int dir, int mul = 1) { spline.insertKnot(knot, dir - 1, mul); },
         arg("spline"), arg("knot"), arg("dir"), arg("mul") = 1);
 
     spline.method(
-        "uniformRefine",
+        "uniformRefine!",
         [](BSpline& spline, int numKnots = 1, int mul = 1, const int dir = 0) {
           spline.uniformRefine(numKnots, mul, dir - 1);
         },
         arg("spline"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = 0);
 
     spline.method(
-        "uniformCoarsen", [](BSpline& spline, int numKnots = 1) { spline.uniformCoarsen(numKnots); }, arg("spline"),
+        "uniformCoarsen!", [](BSpline& spline, int numKnots = 1) { spline.uniformCoarsen(numKnots); }, arg("spline"),
         arg("numKnots") = 1);
 
     // Degree
     spline.method("degree", [](const BSpline& spline, int i) { return spline.degree(i - 1); }, arg("spline"), arg("i"));
     spline.method(
-        "degreeElevate", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeElevate(i, dir - 1); },
+        "degreeElevate!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeElevate(i, dir - 1); },
         arg("basis"), arg("i") = 1, arg("dir") = 0);
     spline.method(
-        "degreeReduce", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeReduce(i, dir - 1); }, arg("basis"),
+        "degreeReduce!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeReduce(i, dir - 1); }, arg("basis"),
         arg("i") = 1, arg("dir") = 0);
     spline.method(
-        "degreeIncrease", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeIncrease(i, dir - 1); },
+        "degreeIncrease!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeIncrease(i, dir - 1); },
         arg("basis"), arg("i") = 1, arg("dir") = 0);
     spline.method(
-        "degreeDecrease", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeDecrease(i, dir - 1); },
+        "degreeDecrease!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeDecrease(i, dir - 1); },
         arg("basis"), arg("i") = 1, arg("dir") = 0);
 
     spline.method(
         "active!",
-        [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+        [](const BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
           basis.active_into(wrapVector(u), out);
           incrementByOne(out);
         },
@@ -101,8 +103,9 @@ struct WrapTensorBSpline
 
     // Basis
     spline.method(
-        "basis", [](BSpline& spline) -> gismo::gsTensorBSplineBasis<n>& { return spline.basis(); }, arg("spline"));
-    spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
+        "basis", [](const BSpline& spline) -> const gismo::gsTensorBSplineBasis<n>& { return spline.basis(); },
+        arg("spline"));
+    spline.method("boundary", [](const BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
   }
 };
 

@@ -22,50 +22,50 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
   spline.constructor(
       [](const gismo::gsBSplineBasis<>& basis, JuliaMatrix coefs) { return new BSpline{basis, wrapMatrix(coefs)}; });
 
-  spline.method("numCoefs", &BSpline::numCoefs, arg("spline"));
+  spline.method("numCoefs", [](const BSpline& spline) { return spline.numCoefs(); }, arg("spline"));
 
   // knots
   spline.method("knots", [](const BSpline& spline) { return spline.knots(); }, arg("spline"));
 
   spline.method(
-      "insertKnot", [](BSpline& spline, double knot) { spline.insertKnot(knot); }, arg("spline"), arg("knot"));
+      "insertKnot!", [](BSpline& spline, double knot) { spline.insertKnot(knot); }, arg("spline"), arg("knot"));
 
   spline.method(
-      "uniformRefine",
+      "uniformRefine!",
       [](BSpline& spline, int numKnots = 1, int mul = 1, const int dir = -1) {
         spline.uniformRefine(numKnots, mul, dir);
       },
       arg("spline"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = -1);
 
   spline.method(
-      "uniformCoarsen", [](BSpline& spline, int numKnots = 1) { spline.uniformCoarsen(numKnots); }, arg("spline"),
+      "uniformCoarsen!", [](BSpline& spline, int numKnots = 1) { spline.uniformCoarsen(numKnots); }, arg("spline"),
       arg("numKnots") = 1);
 
   // Degree
   spline.method("degree", [](const BSpline& spline) { return spline.degree(); }, arg("spline"));
   spline.method(
-      "degreeElevate", [](BSpline& spline, const int i = 1) { spline.degreeElevate(i); }, arg("spline"), arg("i") = 1);
+      "degreeElevate!", [](BSpline& spline, const int i = 1) { spline.degreeElevate(i); }, arg("spline"), arg("i") = 1);
   spline.method(
-      "degreeReduce", [](BSpline& spline, const int i = 1) { spline.degreeReduce(i); }, arg("spline"), arg("i") = 1);
+      "degreeReduce!", [](BSpline& spline, const int i = 1) { spline.degreeReduce(i); }, arg("spline"), arg("i") = 1);
   spline.method(
-      "degreeIncrease", [](BSpline& spline, const int i = 1) { spline.degreeIncrease(i); }, arg("spline"),
+      "degreeIncrease!", [](BSpline& spline, const int i = 1) { spline.degreeIncrease(i); }, arg("spline"),
       arg("i") = 1);
   spline.method(
-      "degreeDecrease", [](BSpline& spline, const int i = 1) { spline.degreeDecrease(i); }, arg("spline"),
+      "degreeDecrease!", [](BSpline& spline, const int i = 1) { spline.degreeDecrease(i); }, arg("spline"),
       arg("i") = 1);
 
   spline.method(
       "active!",
-      [](BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
+      [](const BSpline& basis, JuliaVector u, gismo::gsMatrix<int>& out) {
         basis.active_into(wrapVector(u), out);
         incrementByOne(out);
       },
       arg("basis"), arg("u"), arg("out"));
 
   // Basis
-  spline.method("basis", [](BSpline& spline) -> gismo::gsBSplineBasis<>& { return spline.basis(); }, arg("spline"));
-  spline.method("boundary", [](BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
-  spline.method("numCoefs", [](BSpline& spline) { spline.numCoefs(); }, arg("spline"));
+  spline.method(
+      "basis", [](const BSpline& spline) -> const gismo::gsBSplineBasis<>& { return spline.basis(); }, arg("spline"));
+  spline.method("boundary", [](const BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
 
   /*
       enum corner { southwestfront = 1, southeastfront = 2, northwestfront = 3, northeastfront = 4,
@@ -74,8 +74,8 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
   };
   */
   spline.method(
-      "coefAtCorner", [](BSpline& spline, int c) { return gismo::gsVector<>{spline.coefAtCorner(c)}; }, arg("spline"),
-      arg("c"));
+      "coefAtCorner", [](const BSpline& spline, int c) { return gismo::gsVector<>{spline.coefAtCorner(c)}; },
+      arg("spline"), arg("c"));
 }
 
 namespace jlcxx {
