@@ -1,0 +1,162 @@
+name: Test jlTinyGismo
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        julia-version: ['1.10', '1.11', '1.12']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            wget \
+            libopenblas-dev \
+            liblapack-dev \
+            libboost-all-dev
+      
+      - name: Download gismo release
+        run: |
+          # Download latest gismo release (v25.07.0)
+          mkdir -p /tmp/gismo-build
+          cd /tmp/gismo-build
+          
+          # Download pre-built binaries or source
+          # For now, we'll build from source as pre-built binaries may not be consistently available
+          git clone --depth 1 --branch v25.07.0 https://github.com/gismo/gismo.git gismo-src
+      
+      - name: Build gismo
+        run: |
+          cd /tmp/gismo-build/gismo-src
+          mkdir -p build
+          cd build
+          
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/tmp/gismo-install \
+            -DGISMO_BUILD_LIB=ON \
+            -DGISMO_WITH_MKDE=OFF \
+            -DGISMO_WITH_OPENMP=ON
+          
+          cmake --build . --config Release --parallel 4
+          cmake --install .
+      
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ matrix.julia-version }}
+      
+      - name: Install Julia dependencies
+        run: |
+          julia -e 'using Pkg; Pkg.add("CxxWrap")'
+      
+      - name: Build libjltinygismo
+        run: |
+          mkdir -p build
+          cd build
+          
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="/tmp/gismo-install" \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+          
+          cmake --build . --config Release --parallel 4
+          cmake --install .
+      
+      - name: Run Julia tests
+        env:
+          LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/install/lib:$LD_LIBRARY_PATH
+        run: |
+          # Update test.jl to use the built library
+          mkdir -p /tmp/test-run
+          
+          # Create a test runner script
+          cat > /tmp/test-run/run_tests.jl << 'EOF'
+          # Adjust library path for testing
+          lib_path = get(ENV, "TEST_LIB_PATH", "./install/lib")
+          
+          module GismoTest
+              using CxxWrap
+              @wrapmodule(() -> joinpath(ARGS[1], "libjltinygismo"))
+          
+              function __init__()
+                  return @initcxx
+              end
+          
+              BSplineBasis(args...) = BSplineBasis{1}(args...)
+          end
+          
+          using .GismoTest
+          
+          # Run basic tests
+          try
+              # Test 1: KnotVector
+              vec = [0, 0, 0, 0.5, 1, 1, 1]
+              kv = GismoTest.KnotVector(vec)
+              unique_kv = GismoTest.unique(kv)
+              println("✓ Test 1: KnotVector creation passed")
+              
+              # Test 2: BSplineBasis
+              basis = GismoTest.BSplineBasis(kv)
+              size_basis = GismoTest.size(basis)
+              println("✓ Test 2: BSplineBasis creation passed")
+              
+              # Test 3: TensorBSplineBasis
+              basis2d = GismoTest.TensorBSplineBasis{2}(kv, kv)
+              println("✓ Test 3: TensorBSplineBasis creation passed")
+              
+              # Test 4: File reading (if file exists)
+              filename = "julia/geometry/scordelis_lo.xml"
+              if isfile(filename)
+                  basis_nurbs = GismoTest.readFile(GismoTest.TensorNurbsBasis{2}, filename)
+                  geo_nurbs = GismoTest.readFile(GismoTest.TensorNurbs{2}, filename)
+                  println("✓ Test 4: File reading passed")
+              else
+                  println("⊘ Test 4: Skipped (file not found)")
+              end
+              
+              # Test 5: BSpline geometry
+              geo = GismoTest.BSpline(basis, rand(4))
+              evals = GismoTest.gsMatrix{Float64}()
+              GismoTest.eval!(geo, [0.4], evals)
+              println("✓ Test 5: BSpline evaluation passed")
+              
+              # Test 6: TensorBSpline
+              corners = [
+                  0.0 0.0 0.0
+                  1.0 0.0 0.0
+                  1.0 1.0 0.0
+                  0.0 1.0 0.0
+              ]
+              geo3 = GismoTest.TensorBSpline{2}(corners, kv, kv)
+              GismoTest.eval!(geo3, [0.4, 0.4], evals)
+              println("✓ Test 6: TensorBSpline evaluation passed")
+              
+              # Test 7: Rectangle creation
+              geo4 = GismoTest.createBSplineRectangle()
+              GismoTest.eval!(geo4, [0.4, 0.4], evals)
+              println("✓ Test 7: BSpline rectangle creation passed")
+              
+              println("\n✓✓✓ All tests passed! ✓✓✓")
+          catch e
+              println("✗ Test failed with error:")
+              println(e)
+              rethrow()
+          end
+          EOF
+          
+          julia /tmp/test-run/run_tests.jl "${{ github.workspace }}/install"
