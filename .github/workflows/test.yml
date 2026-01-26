@@ -25,13 +25,24 @@ jobs:
             liblapack-dev \
             libboost-all-dev
       
+      - name: Check gismo cache
+        uses: actions/cache@v4
+        id: gismo-cache
+        with:
+          path: /tmp/gismo-install
+          key: gismo-v25.07.0-${{ runner.os }}
+          restore-keys: |
+            gismo-v25.07.0-${{ runner.os }}
+      
       - name: Download gismo release
+        if: steps.gismo-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p /tmp/gismo-build
           cd /tmp/gismo-build
           git clone --depth 1 --branch v25.07.0 https://github.com/gismo/gismo.git gismo-src
       
       - name: Build gismo
+        if: steps.gismo-cache.outputs.cache-hit != 'true'
         run: |
           cd /tmp/gismo-build/gismo-src
           mkdir -p build
@@ -46,13 +57,6 @@ jobs:
           
           cmake --build . --config Release --parallel 4
           cmake --install .
-      
-      - name: Upload gismo installation
-        uses: actions/upload-artifact@v4
-        with:
-          name: gismo-install
-          path: /tmp/gismo-install
-          retention-days: 1
 
   test:
     needs: build-gismo
@@ -76,10 +80,12 @@ jobs:
             libboost-all-dev
       
       - name: Download gismo installation
-        uses: actions/download-artifact@v4
+        uses: actions/cache@v4
         with:
-          name: gismo-install
           path: /tmp/gismo-install
+          key: gismo-v25.07.0-${{ runner.os }}
+          restore-keys: |
+            gismo-v25.07.0-${{ runner.os }}
       
       - name: Set up Julia ${{ matrix.julia-version }}
         uses: julia-actions/setup-julia@v1
