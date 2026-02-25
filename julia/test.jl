@@ -22,14 +22,15 @@ GismoTest.degreeElevate!(kv)
 # using BenchmarkTools
 # @benchmark GismoTest.knotContainer($kv)
 
-GismoTest.toMatrix(GismoTest.greville(kv))
+# GismoTest.toMatrix(GismoTest.greville(kv))
+
 
 GismoTest.unique(kv)
 
 basis = GismoTest.BSplineBasis(kv)
 GismoTest.size(basis)
 GismoTest.elementIndex(basis, [0.4])
-
+GismoTest.boundary(basis, 1)
 
 ks = GismoTest.knotSpans(basis)[1]
 
