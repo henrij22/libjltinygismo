@@ -31,6 +31,7 @@ try
     # Test 2: BSplineBasis
     basis = GismoTest.BSplineBasis(kv)
     size_basis = GismoTest.size(basis)
+    GismoTest.boundary(basis, 1)
     println("✓ Test 2: BSplineBasis creation passed")
     
     # Test 3: TensorBSplineBasis

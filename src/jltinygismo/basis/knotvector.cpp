@@ -47,6 +47,6 @@ void registerKnotVector(jlcxx::Module& mod) {
       arg("clamp") = true);
   kv.method(
       "greville!",
-      [](const KnotVector& kv, gismo::gsMatrix<>& out, bool clamp = true) { kv.greville_into(out, clamp); }, arg("kv"),
-      arg("out"), arg("clamp") = true);
+      [](const KnotVector& kv, gismo::gsMatrix<>& out) { kv.greville_into(out); }, arg("kv"),
+      arg("out"));
 }
