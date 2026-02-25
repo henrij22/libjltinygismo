@@ -203,5 +203,7 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
     return elements;
   });
 
+  basis.method("boundary", [](Basis& basis, short_t s) { return basis.boundary(s); }, arg("basis"), arg("s"));
+
   return basis;
 }

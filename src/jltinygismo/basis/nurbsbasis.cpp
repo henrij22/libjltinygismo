@@ -122,6 +122,4 @@ void registerNurbsBasis(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsBasis<do
   mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("TensorNurbsBasis", gsBasis.dt())
       .apply<gismo::gsTensorNurbsBasis<2>, gismo::gsTensorNurbsBasis<3>>(WrapTensorNURBSBasis());
 
-  // gismo::gsTensorNurbsBasis<2>{}.eva
-  gismo::gsTensorNurbsBasis<1>{};
 }

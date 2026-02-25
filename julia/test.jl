@@ -18,6 +18,12 @@ using BenchmarkTools
 vec = [0, 0, 0, 0.5, 1, 1, 1]
 kv = GismoTest.KnotVector(vec)
 
+GismoTest.degreeElevate!(kv)
+# using BenchmarkTools
+# @benchmark GismoTest.knotContainer($kv)
+
+GismoTest.toMatrix(GismoTest.greville(kv))
+
 GismoTest.unique(kv)
 
 basis = GismoTest.BSplineBasis(kv)
@@ -30,6 +36,9 @@ ks = GismoTest.knotSpans(basis)[1]
 GismoTest.lowerCorner(ks)
 
 basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
+
+boundaryIndices = GismoTest.boundary(basis, 2)
+GismoTest.toMatrix(boundaryIndices)
 
 # GismoTest.writeParaview(basis, "basis")
 

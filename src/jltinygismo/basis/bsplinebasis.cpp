@@ -114,20 +114,22 @@ struct WrapTensorBSplineBasis
           arg("basis"), arg("u"), arg("coefs"), arg("out"));
 
     // Second Derivatives
-    if constexpr (n == 1)
+    if constexpr (n == 1) {
       basis.method(
           "deriv2!",
           [](const Basis& basis, JuliaVector u, JuliaVector coefs, gismo::gsMatrix<>& out) {
             basis.deriv2_into(wrapVector(u), wrapVector(coefs), out);
           },
           arg("basis"), arg("u"), arg("coefs"), arg("out"));
-    if constexpr (n == 1)
+    }
+    if constexpr (n == 1) {
       basis.method(
           "deriv2!",
           [](const Basis& basis, JuliaVector u, JuliaMatrix coefs, gismo::gsMatrix<>& out) {
             basis.deriv2_into(wrapVector(u), wrapMatrix(coefs), out);
           },
           arg("basis"), arg("u"), arg("coefs"), arg("out"));
+    }
 
     // Geometry
     // basis.method("makeGeometry", [](const Basis& basis, JuliaMatrix coefs) {
