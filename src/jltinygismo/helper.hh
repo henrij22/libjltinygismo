@@ -5,11 +5,13 @@
 #include <gsNurbs/gsKnotVector.h>
 #include <gsEigen/Eigen>
 #include <string>
+#include <algorithm>
 
 template <typename Scalar>
 inline void assertSizeAndCopy(const gismo::gsMatrix<Scalar>& fromMat, jlcxx::ArrayRef<Scalar, 2> out) {
-  if (fromMat.rows() * fromMat.cols() != out.size())
-    throw std::runtime_error("Output size mismatch, should be " + std::to_string(fromMat.rows()) + "," + std::to_string(fromMat.cols()));
+  if (fromMat.rows() * fromMat.cols() != static_cast<int>(out.size()))
+    throw std::runtime_error("Output size mismatch, should be " + std::to_string(fromMat.rows()) + "," +
+                             std::to_string(fromMat.cols()));
   std::copy(fromMat.data(), fromMat.data() + fromMat.size(), out.data());
 }
 
@@ -27,4 +29,13 @@ template <typename Scalar>
 inline auto wrapMatrix(jlcxx::ArrayRef<Scalar, 2> mat) {
   auto [rows, cols] = rowsAndCols(mat);
   return gsEigen::Map<const gsEigen::MatrixX<Scalar>>(mat.data(), rows, cols);
+}
+
+template <typename Scalar>
+inline void incrementByOne(gismo::gsMatrix<Scalar>& mat) {
+  std::for_each(mat.reshaped().begin(), mat.reshaped().end(), [](auto& i) { i += 1; });
+}
+template <typename Scalar>
+inline void incrementByOne(gismo::gsVector<Scalar>& vec) {
+  std::for_each(vec.begin(), vec.end(), [](auto& i) { i += 1; });
 }
