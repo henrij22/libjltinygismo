@@ -103,8 +103,7 @@ struct WrapTensorBSpline
 
     // Basis
     spline.method(
-        "basis", [](const BSpline& spline) -> const gismo::gsTensorBSplineBasis<n>& { return spline.basis(); },
-        arg("spline"));
+        "basis", [](const BSpline& spline) -> gismo::gsTensorBSplineBasis<n> { return spline.basis(); }, arg("spline"));
     spline.method("boundary", [](const BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
   }
 };

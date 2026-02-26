@@ -64,7 +64,7 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   // Basis
   spline.method(
-      "basis", [](const BSpline& spline) -> const gismo::gsBSplineBasis<>& { return spline.basis(); }, arg("spline"));
+      "basis", [](const BSpline& spline) -> gismo::gsBSplineBasis<> { return spline.basis(); }, arg("spline"));
   spline.method("boundary", [](const BSpline& spline, int c) { return spline.boundary(c); }, arg("spline"), arg("c"));
 
   /*

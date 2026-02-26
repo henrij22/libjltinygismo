@@ -14,92 +14,97 @@ module GismoTest
 end
 
 using .GismoTest
-using BenchmarkTools
-vec = [0, 0, 0, 0.5, 1, 1, 1]
-kv = GismoTest.KnotVector(vec)
+# using BenchmarkTools
+# vec = [0, 0, 0, 0.5, 1, 1, 1]
+# kv = GismoTest.KnotVector(vec)
 
-GismoTest.degreeElevate!(kv)
+# GismoTest.degreeElevate!(kv)
 # using BenchmarkTools
 # @benchmark GismoTest.knotContainer($kv)
 
 # GismoTest.toMatrix(GismoTest.greville(kv))
 
 
-GismoTest.unique(kv)
+# GismoTest.unique(kv)
 
-basis = GismoTest.BSplineBasis(kv)
-GismoTest.size(basis)
-GismoTest.elementIndex(basis, [0.4])
-GismoTest.boundary(basis, 1)
+# basis = GismoTest.BSplineBasis(kv)
+# GismoTest.size(basis)
+# GismoTest.elementIndex(basis, [0.4])
+# GismoTest.boundary(basis, 1)
 
-ks = GismoTest.knotSpans(basis)[1]
+# ks = GismoTest.knotSpans(basis)[1]
 
-GismoTest.lowerCorner(ks)
+# GismoTest.lowerCorner(ks)
 
-basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
+# basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
 
-boundaryIndices = GismoTest.boundary(basis, 2)
-GismoTest.toMatrix(boundaryIndices)
+# boundaryIndices = GismoTest.boundary(basis, 2)
+# GismoTest.toMatrix(boundaryIndices)
 
 # GismoTest.writeParaview(basis, "basis")
 
-methods(GismoTest.BSplineBasis{Int64(2)})
-# basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
+# methods(GismoTest.BSplineBasis{Int64(2)})
+#  basis = GismoTest.TensorBSplineBasis{2}(kv, kv)
 # GismoTest.size(basis)
 # GismoTest.elementIndex(basis, [0.4, 0.8])
 
-filename = "julia/geometry/scordelis_lo.xml"
-basis = GismoTest.readFile(GismoTest.TensorNurbsBasis{2}, filename)
-geo2 = GismoTest.readFile(GismoTest.TensorNurbs{2}, filename)
-weights = GismoTest.weights(geo2)
-GismoTest.toVector(weights)
-coefs = GismoTest.coefs(geo2)
-GismoTest.toMatrix(coefs)
-coefs = GismoTest.coefsSize(geo2)
+# filename = "julia/geometry/scordelis_lo.xml"
+# basis = GismoTest.readFile(GismoTest.TensorNurbsBasis{2}, filename)
+# geo2 = GismoTest.readFile(GismoTest.TensorNurbs{2}, filename)
+# weights = GismoTest.weights(geo2)
+# GismoTest.toVector(weights)
+# coefs = GismoTest.coefs(geo2)
+# GismoTest.toMatrix(coefs)
+# coefs = GismoTest.coefsSize(geo2)
 
-geo = GismoTest.BSpline(basis, rand(4))
+# # geo = GismoTest.BSpline(basis, rand(4))
 
-geo = GismoTest.BSpline(basis, rand(4, 2))
+# geo = GismoTest.BSpline(basis, rand(4, 2))
 
-GismoTest.boundary(geo, 1)[]
+# GismoTest.boundary(geo, 1)[]
+
+# GismoTest.eval!(geo, [0.4], evals)
+# GismoTest.toMatrix(evals)
+
+# basis2 = GismoTest.TensorBSplineBasis{2}(kv, kv)
+# GismoTest.eval!(basis2, [0.4, 0.4], evals)
+# GismoTest.toMatrix(evals)
+
+# actives = GismoTest.gsMatrix{Int32}()
+# GismoTest.active!(basis2, [0.1, 0.1], actives)
+# GismoTest.toMatrix(actives)
+
+# geo2 = GismoTest.TensorBSpline{2}(basis2, randn(16, 3))
+# GismoTest.eval!(geo2, [0.4, 0.4], evals)
+# GismoTest.toMatrix(evals)
+
+# corners = [
+#     0.0 0.0 0.0
+#     1.0 0.0 0.0
+#     1.0 1.0 0.0
+#     0.0 1.0 0.0
+# ]
+# geo3 = GismoTest.TensorBSpline{2}(corners, kv, kv)
+# GismoTest.eval!(geo3, [0.4, 0.4], evals)
+# GismoTest.toMatrix(evals)
+
+# vec = GismoTest.gsVector{Float64}()
+# GismoTest.closestPointTo(geo3, [0.5, 0.6, 0.5], vec)
+# GismoTest.toVector(vec)
+
+# GismoTest._value(vec, 2)
+
+# GismoTest.toVector(GismoTest.coefAtCorner(geo3, 4))
 
 evals = GismoTest.gsMatrix{Float64}()
-GismoTest.eval!(geo, [0.4], evals)
-GismoTest.toMatrix(evals)
-
-basis2 = GismoTest.TensorBSplineBasis{2}(kv, kv)
-GismoTest.eval!(basis2, [0.4, 0.4], evals)
-GismoTest.toMatrix(evals)
-
-actives = GismoTest.gsMatrix{Int32}()
-GismoTest.active!(basis2, [0.1, 0.1], actives)
-GismoTest.toMatrix(actives)
-
-geo2 = GismoTest.TensorBSpline{2}(basis2, randn(16, 3))
-GismoTest.eval!(geo2, [0.4, 0.4], evals)
-GismoTest.toMatrix(evals)
-
-corners = [
-    0.0 0.0 0.0
-    1.0 0.0 0.0
-    1.0 1.0 0.0
-    0.0 1.0 0.0
-]
-geo3 = GismoTest.TensorBSpline{2}(corners, kv, kv)
-GismoTest.eval!(geo3, [0.4, 0.4], evals)
-GismoTest.toMatrix(evals)
-
-vec = GismoTest.gsVector{Float64}()
-GismoTest.closestPointTo(geo3, [0.5, 0.6, 0.5], vec)
-GismoTest.toVector(vec)
-
-GismoTest._value(vec, 2)
-
-GismoTest.toVector(GismoTest.coefAtCorner(geo3, 4))
-
-geo4 = GismoTest.createBSplineRectangle()
+geo4 = GismoTest.createBSplineSquare(2)
 GismoTest.eval!(geo4, [0.4, 0.4], evals)
 GismoTest.toMatrix(evals)
+
+GismoTest.knots(GismoTest.basis(geo4))
+GismoTest.basis(geo4)
+GismoTest.knotContainer(GismoTest.knots(GismoTest.basis(geo4)))
+
 
 GismoTest.toMatrix(evals)
 GismoTest.value(evals, 2, 1)

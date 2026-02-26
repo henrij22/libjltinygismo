@@ -59,7 +59,7 @@ void registerNurbs(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<doub
       arg("basis"), arg("u"), arg("out"));
 
   // Basis
-  nurbs.method("basis", [](const Nurbs& nurbs) -> const gismo::gsNurbsBasis<>& { return nurbs.basis(); }, arg("nurbs"));
+  nurbs.method("basis", [](const Nurbs& nurbs) -> gismo::gsNurbsBasis<> { return nurbs.basis(); }, arg("nurbs"));
   nurbs.method("boundary", [](const Nurbs& nurbs, int c) { return nurbs.boundary(c); }, arg("nurbs"), arg("c"));
 
   /*

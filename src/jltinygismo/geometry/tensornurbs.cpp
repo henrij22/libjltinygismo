@@ -99,7 +99,7 @@ struct WrapTensorNurbs
 
     // Basis
     nurbs.method(
-        "basis", [](const Nurbs& nurbs) -> const gismo::gsTensorNurbsBasis<n>& { return nurbs.basis(); }, arg("nurbs"));
+        "basis", [](const Nurbs& nurbs) -> gismo::gsTensorNurbsBasis<n> { return nurbs.basis(); }, arg("nurbs"));
     nurbs.method("boundary", [](const Nurbs& nurbs, int c) { return nurbs.boundary(c); }, arg("nurbs"), arg("c"));
   }
 };
