@@ -32,10 +32,10 @@ void registerBSpline(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<do
 
   spline.method(
       "uniformRefine!",
-      [](BSpline& spline, int numKnots = 1, int mul = 1, const int dir = -1) {
-        spline.uniformRefine(numKnots, mul, dir);
+      [](BSpline& spline, int numKnots = 1, int mul = 1, const int dir = 0) {
+        spline.uniformRefine(numKnots, mul, toGismoDir(dir, spline.parDim(), "uniformRefine!"));
       },
-      arg("spline"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = -1);
+      arg("spline"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = 0);
 
   spline.method(
       "uniformCoarsen!", [](BSpline& spline, int numKnots = 1) { spline.uniformCoarsen(numKnots); }, arg("spline"),

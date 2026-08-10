@@ -64,13 +64,15 @@ struct WrapTensorBSpline
 
     spline.method(
         "insertKnot!",
-        [](BSpline& spline, double knot, int dir, int mul = 1) { spline.insertKnot(knot, dir - 1, mul); },
+        [](BSpline& spline, double knot, int dir, int mul = 1) {
+          spline.insertKnot(knot, toGismoDirRequired(dir, spline.parDim(), "insertKnot!"), mul);
+        },
         arg("spline"), arg("knot"), arg("dir"), arg("mul") = 1);
 
     spline.method(
         "uniformRefine!",
         [](BSpline& spline, int numKnots = 1, int mul = 1, const int dir = 0) {
-          spline.uniformRefine(numKnots, mul, dir - 1);
+          spline.uniformRefine(numKnots, mul, toGismoDir(dir, spline.parDim(), "uniformRefine!"));
         },
         arg("spline"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = 0);
 
@@ -81,16 +83,28 @@ struct WrapTensorBSpline
     // Degree
     spline.method("degree", [](const BSpline& spline, int i) { return spline.degree(i - 1); }, arg("spline"), arg("i"));
     spline.method(
-        "degreeElevate!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeElevate(i, dir - 1); },
+        "degreeElevate!",
+        [](BSpline& spline, int i = 1, int dir = 0) {
+          spline.degreeElevate(i, toGismoDir(dir, spline.parDim(), "degreeElevate!"));
+        },
         arg("basis"), arg("i") = 1, arg("dir") = 0);
     spline.method(
-        "degreeReduce!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeReduce(i, dir - 1); }, arg("basis"),
-        arg("i") = 1, arg("dir") = 0);
-    spline.method(
-        "degreeIncrease!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeIncrease(i, dir - 1); },
+        "degreeReduce!",
+        [](BSpline& spline, int i = 1, int dir = 0) {
+          spline.degreeReduce(i, toGismoDir(dir, spline.parDim(), "degreeReduce!"));
+        },
         arg("basis"), arg("i") = 1, arg("dir") = 0);
     spline.method(
-        "degreeDecrease!", [](BSpline& spline, int i = 1, int dir = 0) { spline.degreeDecrease(i, dir - 1); },
+        "degreeIncrease!",
+        [](BSpline& spline, int i = 1, int dir = 0) {
+          spline.degreeIncrease(i, toGismoDir(dir, spline.parDim(), "degreeIncrease!"));
+        },
+        arg("basis"), arg("i") = 1, arg("dir") = 0);
+    spline.method(
+        "degreeDecrease!",
+        [](BSpline& spline, int i = 1, int dir = 0) {
+          spline.degreeDecrease(i, toGismoDir(dir, spline.parDim(), "degreeDecrease!"));
+        },
         arg("basis"), arg("i") = 1, arg("dir") = 0);
 
     spline.method(

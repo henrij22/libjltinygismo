@@ -16,15 +16,17 @@ struct WrapMatrix
     matrix.constructor([](int rows, int cols) { return new Matrix(rows, cols); });
 
     matrix.method(
-        "toMatrix", [](Matrix& matrix) { return jlcxx::make_julia_array(matrix.data(), matrix.rows(), matrix.cols()); },
-        arg("matrix"));
+        "toMatrix", [](const Matrix& matrix) { return copyToJuliaArray(matrix); }, arg("matrix"));
 
+    // A single row is as much a vector as a single column; several G+Smo routines
+    // (greville_into, ...) hand back a 1 x n row.
     matrix.method(
         "toVector",
         [](Matrix& matrix) {
-          if (matrix.cols() != 1)
-            throw std::runtime_error("toVector: Matrix is not a vector!");
-          return jlcxx::make_julia_array(matrix.data(), matrix.rows());
+          if (matrix.cols() != 1 && matrix.rows() != 1)
+            throw std::runtime_error("toVector: Matrix is not a vector, it is " + std::to_string(matrix.rows()) + "x" +
+                                     std::to_string(matrix.cols()));
+          return copyToJuliaVector(matrix.data(), matrix.size());
         },
         arg("matrix"));
 
@@ -51,6 +53,16 @@ struct WrapMatrix
         },
         arg("matrix"), arg("i"), arg("j"));
 
+    matrix.method(
+        "setValue!",
+        [](Matrix& matrix, int i, int j, typename Matrix::Scalar value) {
+          if (i < 1 || j < 1 || matrix.rows() < i || matrix.cols() < j)
+            throw std::runtime_error("setValue!: Index " + std::to_string(i) + ", " + std::to_string(j) +
+                                     " out-of-bounds");
+          matrix(i - 1, j - 1) = value;
+        },
+        arg("matrix"), arg("i"), arg("j"), arg("value"));
+
     matrix.method("size", &Matrix::size);
     matrix.method("rows", &Matrix::rows);
     matrix.method("cols", &Matrix::cols);
@@ -69,7 +81,7 @@ struct WrapVector
     vector.constructor([](int rows) { return new Vector(rows); });
 
     vector.method(
-        "toVector", [](Vector& vector) { return jlcxx::make_julia_array(vector.data(), vector.rows()); },
+        "toVector", [](const Vector& vector) { return copyToJuliaVector(vector.data(), vector.rows()); },
         arg("vector"));
 
     vector.method(
@@ -93,6 +105,15 @@ struct WrapVector
           return vector(i - 1);
         },
         arg("vector"), arg("i"));
+
+    vector.method(
+        "setValue!",
+        [](Vector& vector, int i, typename Vector::Scalar value) {
+          if (i < 1 || vector.rows() < i)
+            throw std::runtime_error("setValue!: Index " + std::to_string(i) + " out-of-bounds");
+          vector(i - 1) = value;
+        },
+        arg("vector"), arg("i"), arg("value"));
 
     vector.method("size", &Vector::size);
     vector.method("rows", &Vector::rows);

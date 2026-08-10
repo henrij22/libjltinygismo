@@ -42,6 +42,12 @@ struct WrapTensorNURBSBasis
             auto kvs = std::vector<gismo::gsKnotVector<>>{knotVector1, knotVector2};
             return new Basis{kvs, wrapMatrix(w)};
           });
+    } else if constexpr (n == 3) {
+      basis.constructor([](const gismo::gsKnotVector<>& knotVector1, const gismo::gsKnotVector<>& knotVector2,
+                           const gismo::gsKnotVector<>& knotVector3, JuliaMatrix w) {
+        auto kvs = std::vector<gismo::gsKnotVector<>>{knotVector1, knotVector2, knotVector3};
+        return new Basis{kvs, wrapMatrix(w)};
+      });
     }
 
     // Knots
@@ -75,19 +81,20 @@ struct WrapTensorNURBSBasis
     else
       basis.method("degree", [](const Basis& basis, int i) { return basis.degree(i - 1); }, arg("basis"), arg("i"));
 
-    // Actives
+    // Actives -- see the note in bsplinebasis.cpp: numActive_into is not implemented for
+    // tensor bases upstream, so the count is formed from the per-direction degrees.
     if constexpr (n == 1)
-      basis.method("numActive", [](const Basis& basis) { return basis.numActive(); }, arg("basis"), arg("u"));
+      basis.method("numActive", [](const Basis& basis) { return basis.numActive(); }, arg("basis"));
     else {
       basis.method(
-          "numActive", [](const Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
-          arg("u"));
-      basis.method(
-          "numActive!",
-          [](const Basis& basis, JuliaVector u, gismo::gsVector<int>& out) {
-            basis.numActive_into(wrapVector(u), out);
+          "numActive",
+          [](const Basis& basis) {
+            index_t numActive = 1;
+            for (short_t d = 0; d < n; ++d)
+              numActive *= basis.degree(d) + 1;
+            return numActive;
           },
-          arg("basis"), arg("u"));
+          arg("basis"));
     }
 
     // Geometry

@@ -116,8 +116,15 @@ jobs:
           
           cmake --build . --config Release --parallel 4
       
-      - name: Run Julia tests
+      - name: Run C++ unit tests
+        env:
+          LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/build/lib:$LD_LIBRARY_PATH
+        working-directory: build
+        run: ctest --output-on-failure
+      
+      - name: Run Julia integration tests
         env:
           LD_LIBRARY_PATH: /tmp/gismo-install/lib:${{ github.workspace }}/build/lib:$LD_LIBRARY_PATH
         run: |
-          julia julia/run_tests.jl "${{ github.workspace }}/build/lib"
+          julia --project=julia -e 'using Pkg; Pkg.instantiate()'
+          julia --project=julia julia/runtests.jl "${{ github.workspace }}/build/lib"

@@ -7,6 +7,19 @@
 
 #include "registergeometries.hh"
 
+namespace jlcxx {
+
+// Must be visible before gsNurbs is registered below, so that jlcxx instantiates the
+// upcast to gsGeometry -- without it every inherited gsGeometry method (coefs, eval!,
+// parDim, ...) fails at runtime with "No upcast for type CxxBaseRef{Nurbs}".
+template <>
+struct SuperType<gismo::gsNurbs<>>
+{
+  using type = gismo::gsGeometry<>;
+};
+
+} // namespace jlcxx
+
 void registerNurbs(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<double>>& geo) {
   using jlcxx::arg;
   using JuliaMatrix = jlcxx::ArrayRef<double, 2>;
@@ -32,8 +45,10 @@ void registerNurbs(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<doub
 
   nurbs.method(
       "uniformRefine!",
-      [](Nurbs& nurbs, int numKnots = 1, int mul = 1, const int dir = -1) { nurbs.uniformRefine(numKnots, mul, dir); },
-      arg("nurbs"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = -1);
+      [](Nurbs& nurbs, int numKnots = 1, int mul = 1, const int dir = 0) {
+        nurbs.uniformRefine(numKnots, mul, toGismoDir(dir, nurbs.parDim(), "uniformRefine!"));
+      },
+      arg("nurbs"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = 0);
 
   nurbs.method(
       "uniformCoarsen!", [](Nurbs& nurbs, int numKnots = 1) { nurbs.uniformCoarsen(numKnots); }, arg("nurbs"),
@@ -72,13 +87,3 @@ void registerNurbs(jlcxx::Module& mod, jlcxx::TypeWrapper<gismo::gsGeometry<doub
       "coefAtCorner", [](const Nurbs& nurbs, int c) { return gismo::gsVector<>{nurbs.coefAtCorner(c)}; }, arg("nurbs"),
       arg("c"));
 }
-
-namespace jlcxx {
-
-template <>
-struct SuperType<gismo::gsBSpline<>>
-{
-  using type = gismo::gsGeometry<>;
-};
-
-} // namespace jlcxx

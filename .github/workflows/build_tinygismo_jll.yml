@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2026 Henrik Jakob jakob@ibb.uni-stuttgart.de
+# SPDX-License-Identifier: MIT
+
+name: Build TinyGismo JLL
+
+on:
+  workflow_dispatch:
+
+# The recipe lives in the Yggdrasil fork, not here. It pins the libjltinygismo commit it
+# builds, so bump that pin there before running this, otherwise the released binary will not
+# contain the changes you just merged:
+# https://github.com/henrij22/Yggdrasil/blob/tinygismo/T/TinyGismo/build_tarballs.jl
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      BINARYBUILDER_AUTOMATIC_APPLE: "true"
+
+    steps:
+      - name: Check out Yggdrasil (tinygismo branch)
+        uses: actions/checkout@v6
+        with:
+          repository: henrij22/Yggdrasil
+          ref: tinygismo
+          path: Yggdrasil
+          fetch-depth: 1
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.12'
+
+      - name: Cache Julia packages
+        uses: julia-actions/cache@v2
+
+      - name: Verify required secret is set
+        shell: bash
+        run: |
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "Missing secret: GITHUB_TOKEN"
+            exit 1
+          fi
+
+      - name: Configure Git identity for deploy
+        shell: bash
+        run: |
+          git config --global user.name "Henrik Jakob"
+          git config --global user.email "jakob@ibb.uni-stuttgart.de"
+
+      - name: Install BinaryBuilder master and BinaryBuilderBase
+        working-directory: Yggdrasil
+        shell: bash
+        run: |
+          julia --color=yes --project=. -e 'using Pkg; Pkg.activate("."); Pkg.add(PackageSpec(name="BinaryBuilder", rev="master")); Pkg.add("BinaryBuilderBase"); Pkg.instantiate()'
+
+      - name: Run build_tarballs.jl and deploy
+        working-directory: Yggdrasil
+        shell: bash
+        run: |
+          julia --color=yes --project=. T/TinyGismo/build_tarballs.jl --debug --verbose --deploy="henrij22/TinyGismo_jll.jl"

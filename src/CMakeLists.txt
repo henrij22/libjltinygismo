@@ -1,5 +1,3 @@
-# SPDX-FileCopyrightText: 2026 Henrik Jakob jakob@ibb.uni-stuttgart.de SPDX-License-Identifier:
-# GPL-3.0-or-later
 
 add_subdirectory(jltinygismo)
 
@@ -45,6 +43,6 @@ install(
   TARGETS jltinygismo
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 

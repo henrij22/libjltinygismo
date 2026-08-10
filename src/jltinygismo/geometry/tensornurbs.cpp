@@ -60,13 +60,16 @@ struct WrapTensorNurbs
     nurbs.method("weights", [](const Nurbs& nurbs) { return nurbs.weights(); }, arg("nurbs"));
 
     nurbs.method(
-        "insertKnot!", [](Nurbs& nurbs, double knot, int dir, int mul = 1) { nurbs.insertKnot(knot, dir - 1, mul); },
+        "insertKnot!",
+        [](Nurbs& nurbs, double knot, int dir, int mul = 1) {
+          nurbs.insertKnot(knot, toGismoDirRequired(dir, nurbs.parDim(), "insertKnot!"), mul);
+        },
         arg("nurbs"), arg("knot"), arg("dir"), arg("mul") = 1);
 
     nurbs.method(
         "uniformRefine!",
         [](Nurbs& nurbs, int numKnots = 1, int mul = 1, const int dir = 0) {
-          nurbs.uniformRefine(numKnots, mul, dir - 1);
+          nurbs.uniformRefine(numKnots, mul, toGismoDir(dir, nurbs.parDim(), "uniformRefine!"));
         },
         arg("nurbs"), arg("numKnots") = 1, arg("mul") = 1, arg("dir") = 0);
 
@@ -77,17 +80,29 @@ struct WrapTensorNurbs
     // Degree
     nurbs.method("degree", [](const Nurbs& nurbs, int i) { return nurbs.degree(i - 1); }, arg("nurbs"), arg("i"));
     nurbs.method(
-        "degreeElevate!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeElevate(i, dir - 1); }, arg("basis"),
-        arg("i") = 1, arg("dir") = 0);
+        "degreeElevate!",
+        [](Nurbs& nurbs, int i = 1, int dir = 0) {
+          nurbs.degreeElevate(i, toGismoDir(dir, nurbs.parDim(), "degreeElevate!"));
+        },
+        arg("basis"), arg("i") = 1, arg("dir") = 0);
     nurbs.method(
-        "degreeReduce!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeReduce(i, dir - 1); }, arg("basis"),
-        arg("i") = 1, arg("dir") = 0);
+        "degreeReduce!",
+        [](Nurbs& nurbs, int i = 1, int dir = 0) {
+          nurbs.degreeReduce(i, toGismoDir(dir, nurbs.parDim(), "degreeReduce!"));
+        },
+        arg("basis"), arg("i") = 1, arg("dir") = 0);
     nurbs.method(
-        "degreeIncrease!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeIncrease(i, dir - 1); }, arg("basis"),
-        arg("i") = 1, arg("dir") = 0);
+        "degreeIncrease!",
+        [](Nurbs& nurbs, int i = 1, int dir = 0) {
+          nurbs.degreeIncrease(i, toGismoDir(dir, nurbs.parDim(), "degreeIncrease!"));
+        },
+        arg("basis"), arg("i") = 1, arg("dir") = 0);
     nurbs.method(
-        "degreeDecrease!", [](Nurbs& nurbs, int i = 1, int dir = 0) { nurbs.degreeDecrease(i, dir - 1); }, arg("basis"),
-        arg("i") = 1, arg("dir") = 0);
+        "degreeDecrease!",
+        [](Nurbs& nurbs, int i = 1, int dir = 0) {
+          nurbs.degreeDecrease(i, toGismoDir(dir, nurbs.parDim(), "degreeDecrease!"));
+        },
+        arg("basis"), arg("i") = 1, arg("dir") = 0);
 
     nurbs.method(
         "active!",

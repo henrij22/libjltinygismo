@@ -1,5 +1,3 @@
-# SPDX-FileCopyrightText: 2026 Henrik Jakob jakob@ibb.uni-stuttgart.de SPDX-License-Identifier:
-# GPL-3.0-or-later
 
 cmake_minimum_required(VERSION 3.18)
 
@@ -11,6 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Defines CMAKE_INSTALL_INCLUDEDIR and friends. Without it the header install rules
+# below expand to an absolute /<pkg>/... path and `cmake --install` tries to write to
+# the filesystem root.
+include(GNUInstallDirs)
 
 find_package(JlCxx REQUIRED)
 find_package(gismo REQUIRED)
@@ -28,5 +31,20 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 
 message(STATUS "Found JlCxx at ${JlCxx_location}")
 
+option(JLTINYGISMO_BUILD_TESTS "Build the C++ unit tests (requires doctest, fetched if absent)" ON)
+
+# A cross build cannot run the resulting test binary, and the BinaryBuilder sandbox that
+# produces the JLL has no network for FetchContent to pull doctest with. Turn the tests
+# off there rather than making every release recipe remember to pass the flag.
+if(JLTINYGISMO_BUILD_TESTS AND CMAKE_CROSSCOMPILING)
+  message(STATUS "Cross-compiling: not building the C++ tests")
+  set(JLTINYGISMO_BUILD_TESTS OFF)
+endif()
+
 add_subdirectory(src)
 # add_subdirectory(cmake)
+
+if(JLTINYGISMO_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif()

@@ -10,8 +10,14 @@ void registerFileReaderFunctions_IMPL(jlcxx::Module& mod) {
   mod.method(
       "readFile",
       [](jlcxx::SingletonType<Type>, const std::string& filename) {
+        if (!gismo::gsFileManager::fileExists(filename))
+          throw std::runtime_error("readFile: no such file: " + filename);
+
         gismo::gsFileData<> data{filename};
-        return *data.getAnyFirst<Type>();
+        auto obj = data.getAnyFirst<Type>();
+        if (!obj)
+          throw std::runtime_error("readFile: " + filename + " contains no object of the requested type");
+        return *obj;
       },
       arg("type"), arg("filename"));
 }
