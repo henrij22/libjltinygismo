@@ -12,6 +12,8 @@ if(NOT doctest_FOUND)
     GIT_TAG v2.4.11
     GIT_SHALLOW TRUE
   )
+  # Otherwise doctest adds its headers and CMake config to our install set.
+  set(DOCTEST_NO_INSTALL ON CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(doctest)
   list(APPEND CMAKE_MODULE_PATH "${doctest_SOURCE_DIR}/scripts/cmake")
 endif()
