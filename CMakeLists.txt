@@ -28,5 +28,12 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 
 message(STATUS "Found JlCxx at ${JlCxx_location}")
 
+option(JLTINYGISMO_BUILD_TESTS "Build the C++ unit tests (requires doctest, fetched if absent)" ON)
+
 add_subdirectory(src)
 # add_subdirectory(cmake)
+
+if(JLTINYGISMO_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif()

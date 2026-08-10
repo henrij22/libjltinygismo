@@ -1,6 +1,6 @@
 /.devcontainer
 docker-compose.yml
-
+julia/Manifest.toml
 
 /build*
 /.vscode

@@ -13,7 +13,7 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
   using JuliaVector = jlcxx::ArrayRef<double, 1>;
 
   using Basis = gismo::gsBasis<>;
-  auto basis  = mod.add_type<Basis>("gsBasis");
+  auto basis  = mod.add_type<Basis>("gsBasis"); 
 
   basis.method("elementIndex", [](const Basis& basis, JuliaVector u) { return basis.elementIndex(wrapVector(u)) + 1; });
   basis.method("elementIndex", [](const Basis& basis, JuliaMatrix u) { return basis.elementIndex(wrapMatrix(u)) + 1; });
@@ -43,24 +43,39 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
       arg("basis"), arg("i"), arg("u"));
 
   // Degree
+  // `dir` is 1-based with 0 meaning "all directions"; see toGismoDir.
   basis.method(
-      "degreeElevate!", [](Basis& basis, const int i = 1, int dir = -1) { basis.degreeElevate(i); }, arg("basis"),
-      arg("i") = 1, arg("dir") = -1);
+      "degreeElevate!",
+      [](Basis& basis, const int i = 1, int dir = 0) {
+        basis.degreeElevate(i, toGismoDir(dir, basis.dim(), "degreeElevate!"));
+      },
+      arg("basis"), arg("i") = 1, arg("dir") = 0);
   basis.method(
-      "degreeReduce!", [](Basis& basis, const int i = 1, int dir = -1) { basis.degreeReduce(i); }, arg("basis"),
-      arg("i") = 1, arg("dir") = -1);
+      "degreeReduce!",
+      [](Basis& basis, const int i = 1, int dir = 0) {
+        basis.degreeReduce(i, toGismoDir(dir, basis.dim(), "degreeReduce!"));
+      },
+      arg("basis"), arg("i") = 1, arg("dir") = 0);
   basis.method(
-      "degreeIncrease!", [](Basis& basis, const int i = 1, int dir = -1) { basis.degreeIncrease(i); }, arg("basis"),
-      arg("i") = 1, arg("dir") = -1);
+      "degreeIncrease!",
+      [](Basis& basis, const int i = 1, int dir = 0) {
+        basis.degreeIncrease(i, toGismoDir(dir, basis.dim(), "degreeIncrease!"));
+      },
+      arg("basis"), arg("i") = 1, arg("dir") = 0);
   basis.method(
-      "degreeDecrease!", [](Basis& basis, const int i = 1, int dir = -1) { basis.degreeDecrease(i); }, arg("basis"),
-      arg("i") = 1, arg("dir") = -1);
+      "degreeDecrease!",
+      [](Basis& basis, const int i = 1, int dir = 0) {
+        basis.degreeDecrease(i, toGismoDir(dir, basis.dim(), "degreeDecrease!"));
+      },
+      arg("basis"), arg("i") = 1, arg("dir") = 0);
+
+  // gsBasis::elevateContinuity/reduceContinuity take no direction argument.
   basis.method(
-      "elevateContinuity!", [](Basis& basis, const int i = 1, int dir = -1) { basis.elevateContinuity(i); },
-      arg("basis"), arg("i") = 1, arg("dir") = -1);
+      "elevateContinuity!", [](Basis& basis, const int i = 1) { basis.elevateContinuity(i); }, arg("basis"),
+      arg("i") = 1);
   basis.method(
-      "reduceContinuity!", [](Basis& basis, const int i = 1, int dir = -1) { basis.reduceContinuity(i); }, arg("basis"),
-      arg("i") = 1, arg("dir") = -1);
+      "reduceContinuity!", [](Basis& basis, const int i = 1) { basis.reduceContinuity(i); }, arg("basis"),
+      arg("i") = 1);
 
   basis.method("setDegree!", &Basis::setDegree, arg("i"));
   basis.method("setDegreePreservingMultiplicity!", &Basis::setDegreePreservingMultiplicity, arg("i"));
@@ -183,14 +198,19 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
       "uniformCoarsen!", [](Basis& basis, double numKnots = 1) { basis.uniformCoarsen(numKnots); }, arg("basis"),
       arg("numKnots") = 1);
 
+  // Refines the basis in place and returns the matching refined coefficients. The
+  // coefficients cannot be updated in place: refinement adds control points, so the result
+  // has more rows than the input array.
   basis.method(
       "uniformRefine_withCoefs!",
       [](Basis& basis, JuliaMatrix coefs, int numKnots = 1, int mul = 1) {
-        gsEigen::Map<const gsEigen::MatrixXd> coefsMatMap(coefs.data(), coefs.size());
-        gismo::gsMatrix<double> coefsMat{coefsMatMap};
+        gismo::gsMatrix<double> coefsMat{wrapMatrix(coefs)};
+        if (coefsMat.rows() != basis.size())
+          throw std::runtime_error("uniformRefine_withCoefs!: coefs has " + std::to_string(coefsMat.rows()) +
+                                   " rows but the basis has " + std::to_string(basis.size()) + " functions");
 
         basis.uniformRefine_withCoefs(coefsMat, numKnots, mul);
-        assertSizeAndCopy(coefsMat, coefs);
+        return coefsMat;
       },
       arg("basis"), arg("coefs"), arg("numKnots") = 1, arg("mul") = 1);
 

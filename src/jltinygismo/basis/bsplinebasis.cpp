@@ -36,6 +36,11 @@ struct WrapTensorBSplineBasis
       basis.constructor([](const gismo::gsKnotVector<>& knotVector1, const gismo::gsKnotVector<>& knotVector2) {
         return new Basis{knotVector1, knotVector2};
       });
+    else if constexpr (n == 3)
+      basis.constructor([](const gismo::gsKnotVector<>& knotVector1, const gismo::gsKnotVector<>& knotVector2,
+                           const gismo::gsKnotVector<>& knotVector3) {
+        return new Basis{knotVector1, knotVector2, knotVector3};
+      });
 
     // Knots
     basis.method("knots", [](const Basis& basis, int i = 1) { return basis.knots(i - 1); }, arg("basis"), arg("i") = 1);
@@ -81,18 +86,24 @@ struct WrapTensorBSplineBasis
         arg("basis"), arg("knots"));
 
     // Actives
+    //
+    // The number of nonzero basis functions on an element is the same everywhere in a
+    // tensor product B-spline basis, so it needs no evaluation point. Only the univariate
+    // bases provide numActive() upstream, and gsBasis::numActive_into -- which the
+    // point-based overloads went through -- is not implemented for tensor bases, so the
+    // count is formed here from the per-direction degrees instead.
     if constexpr (n == 1)
-      basis.method("numActive", [](const Basis& basis) { return basis.numActive(); }, arg("basis"), arg("u"));
+      basis.method("numActive", [](const Basis& basis) { return basis.numActive(); }, arg("basis"));
     else {
       basis.method(
-          "numActive", [](const Basis& basis, JuliaVector u) { return basis.numActive(wrapVector(u)); }, arg("basis"),
-          arg("u"));
-      basis.method(
-          "numActive!",
-          [](const Basis& basis, JuliaVector u, gismo::gsVector<int>& out) {
-            basis.numActive_into(wrapVector(u), out);
+          "numActive",
+          [](const Basis& basis) {
+            index_t numActive = 1;
+            for (short_t d = 0; d < n; ++d)
+              numActive *= basis.degree(d) + 1;
+            return numActive;
           },
-          arg("basis"), arg("u"));
+          arg("basis"));
       basis.method("component", [](const Basis& basis, int i) { return basis.component(i - 1); }, arg("i"));
     }
 

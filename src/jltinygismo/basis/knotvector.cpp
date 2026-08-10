@@ -1,3 +1,5 @@
+#include <jltinygismo/helper.hh>
+
 #include <jlcxx/const_array.hpp>
 #include <jlcxx/array.hpp>
 #include <jlcxx/jlcxx.hpp>
@@ -26,10 +28,12 @@ void registerKnotVector(jlcxx::Module& mod) {
   kv.method("multiplicities", [](const KnotVector& kv) { return kv.multiplicities(); }, arg("kv"));
   kv.method(
       "knotContainer",
-      [](const KnotVector& knotVector) { return jlcxx::make_const_array(knotVector.data(), knotVector.size()); },
+      [](const KnotVector& knotVector) { return copyToJuliaVector(knotVector.data(), knotVector.size()); },
       arg("kv"));
 
-  kv.method("degree!", [](KnotVector& kv, int i = 1) { kv.degree(i - 1); }, arg("kv"), arg("i") = 1);
+  // gsKnotVector::degree is a const getter, not a mutator -- the old "degree!" binding
+  // called it and discarded the result, so it always returned nothing.
+  kv.method("degree", [](const KnotVector& kv) { return kv.degree(); }, arg("kv"));
   kv.method("degreeIncrease!", [](KnotVector& kv, int i = 1) { kv.degreeIncrease(i); }, arg("kv"), arg("i") = 1);
   kv.method(
       "degreeDecrease!",
@@ -42,11 +46,19 @@ void registerKnotVector(jlcxx::Module& mod) {
       "uniformRefine!", [](KnotVector& kv, int numKnots = 1, int mult = 1) { kv.uniformRefine(numKnots, mult); },
       arg("kv"), arg("numKnots") = 1, arg("mult") = 1);
 
+  // The index used to be bound as `bool`, which silently collapsed every index onto the
+  // first two abscissae. Bind the no-argument overload (all abscissae) and a properly
+  // 1-based indexed one.
+  kv.method("greville", [](const KnotVector& kv) { return kv.greville(); }, arg("kv"));
   kv.method(
-      "greville", [](const KnotVector& kv, bool clamp = true) { return kv.greville(clamp); }, arg("kv"),
-      arg("clamp") = true);
+      "greville",
+      [](const KnotVector& kv, int i) {
+        if (i < 1 || i > kv.size() - kv.degree() - 1)
+          throw std::runtime_error("greville: index " + std::to_string(i) + " out of range 1:" +
+                                   std::to_string(kv.size() - kv.degree() - 1));
+        return kv.greville(i - 1);
+      },
+      arg("kv"), arg("i"));
   kv.method(
-      "greville!",
-      [](const KnotVector& kv, gismo::gsMatrix<>& out) { kv.greville_into(out); }, arg("kv"),
-      arg("out"));
+      "greville!", [](const KnotVector& kv, gismo::gsMatrix<>& out) { kv.greville_into(out); }, arg("kv"), arg("out"));
 }
