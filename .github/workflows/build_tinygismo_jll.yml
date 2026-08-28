@@ -31,9 +31,6 @@ jobs:
         with:
           version: '1.12'
 
-      - name: Cache Julia packages
-        uses: julia-actions/cache@v2
-
       - name: Verify required secret is set
         shell: bash
         run: |
