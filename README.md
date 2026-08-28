@@ -199,4 +199,4 @@ new behavior.
 
 ## License
 
-GPL-3.0-or-later. See [LICENSE](LICENSE).
+See [LICENSE](LICENSE).
