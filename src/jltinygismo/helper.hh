@@ -6,6 +6,7 @@
 #include <gsEigen/Eigen>
 #include <string>
 #include <algorithm>
+#include <vector>
 
 template <typename Scalar>
 inline void assertSizeAndCopy(const gismo::gsMatrix<Scalar>& fromMat, jlcxx::ArrayRef<Scalar, 2> out) {
@@ -88,4 +89,69 @@ inline void incrementByOne(gismo::gsMatrix<Scalar>& mat) {
 template <typename Scalar>
 inline void incrementByOne(gismo::gsVector<Scalar>& vec) {
   std::for_each(vec.begin(), vec.end(), [](auto& i) { i += 1; });
+}
+/// Reject a level that is outside the levels a hierarchical basis actually has.
+///
+/// Levels are 1-based on the Julia side, so they run `1:numLevels`. G+Smo indexes its level
+/// containers without bounds checking, so an out-of-range level reaches it as an out-of-bounds
+/// read rather than an error.
+inline void checkLevel(int level, index_t numLevels, const char* fname) {
+  if (level < 1 || level > static_cast<int>(numLevels))
+    throw std::runtime_error(std::string{fname} + ": level must be in 1:" + std::to_string(numLevels) + ", got " +
+                             std::to_string(level));
+}
+
+/// Guard the coefficient array of a *_withCoefs refinement against a basis it does not belong to.
+inline void checkCoefRows(index_t rows, index_t basisSize, const char* fname) {
+  if (rows != basisSize)
+    throw std::runtime_error(std::string{fname} + ": coefs has " + std::to_string(rows) +
+                             " rows but the basis has " + std::to_string(basisSize) + " functions");
+}
+
+/// Translate Julia-side element boxes into the flat index vector G+Smo's refineElements expects.
+///
+/// Both formats are flat arrays of `2d+1` entries per box, `[level, lower..., upper...]`, but the
+/// conventions differ. G+Smo uses a 0-based level and 0-based knot span indices on the grid of
+/// that level, with the upper corner *exclusive*. Julia-side, following the rest of these
+/// bindings, the level is 1-based and the corners are 1-based and *inclusive*, so a box addresses
+/// the cell range `lower:upper` on its level and reads like an ordinary Julia range.
+///
+/// That makes the upper corner the one entry that is not shifted: an inclusive 1-based upper
+/// bound is already the exclusive 0-based one.
+template <int d>
+inline std::vector<index_t> toGismoBoxes(jlcxx::ArrayRef<int64_t, 1> boxes, const char* fname) {
+  constexpr std::size_t stride = 2 * d + 1;
+  const std::string prefix{fname};
+
+  if (boxes.size() % stride != 0)
+    throw std::runtime_error(prefix + ": box array length must be a multiple of " + std::to_string(stride) + " for a " +
+                             std::to_string(d) + "-dimensional basis, got " + std::to_string(boxes.size()));
+
+  std::vector<index_t> out;
+  out.reserve(boxes.size());
+
+  for (std::size_t box = 0; box != boxes.size() / stride; ++box) {
+    const int64_t* entry = boxes.data() + box * stride;
+
+    if (entry[0] < 1)
+      throw std::runtime_error(prefix + ": level must be >= 1, got " + std::to_string(entry[0]));
+    out.push_back(static_cast<index_t>(entry[0] - 1));
+
+    for (std::size_t i = 0; i != d; ++i) {
+      const int64_t lower = entry[1 + i];
+      const int64_t upper = entry[1 + d + i];
+      if (lower < 1)
+        throw std::runtime_error(prefix + ": lower corner must be >= 1, got " + std::to_string(lower));
+      if (upper < lower)
+        throw std::runtime_error(prefix + ": upper corner (" + std::to_string(upper) +
+                                 ") must not be below the lower corner (" + std::to_string(lower) + ")");
+    }
+
+    for (std::size_t i = 0; i != d; ++i)
+      out.push_back(static_cast<index_t>(entry[1 + i] - 1));
+    for (std::size_t i = 0; i != d; ++i)
+      out.push_back(static_cast<index_t>(entry[1 + d + i]));
+  }
+
+  return out;
 }

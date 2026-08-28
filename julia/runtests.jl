@@ -540,4 +540,114 @@ const QUADRATIC = [0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0]
             end
         end
     end
+
+    @testset "Hierarchical bases (HB / THB)" begin
+        # The two flavours are one C++ template with `Trunc` on or off, so both names are
+        # exercised together throughout.
+        kv = G.KnotVector([0.0, 0.0, 0.0, 0.25, 0.5, 0.75, 1.0, 1.0, 1.0])
+        tensor = G.TensorBSplineBasis{2}(kv, kv)
+
+        # Boxes are [level, lower..., upper...] with 1-based, inclusive Julia conventions;
+        # the binding shifts them to G+Smo's 0-based, upper-exclusive form.
+        corner = Int64[2, 1, 1, 2, 2]
+
+        @testset "a single level is the tensor basis" begin
+            for b in (G.THBSplineBasis{2}(tensor), G.HBSplineBasis{2}(tensor))
+                @test G.numLevels(b) == 1
+                @test G.size(b) == G.size(tensor)
+                @test G.numElements(b) == G.numElements(tensor)
+                @test G.getLevelAtPoint(b, [0.3, 0.7]) == 1
+                @test G.size(G.tensorLevel(b, 1)) == G.size(tensor)
+            end
+        end
+
+        @testset "refineElements! hits exactly the named cells" begin
+            b = G.THBSplineBasis{2}(tensor)
+            G.refineElements!(b, corner)
+            @test G.numLevels(b) == 2
+            @test G.getLevelAtPoint(b, [0.125, 0.125]) == 2   # inside the box
+            @test G.getLevelAtPoint(b, [0.375, 0.125]) == 1   # one cell over
+            @test G.getLevelAtPoint(b, [0.125, 0.375]) == 1
+            @test G.numElements(b) == G.numElements(tensor) + 3
+        end
+
+        @testset "truncation changes the functions, not the span" begin
+            thb, hb = G.THBSplineBasis{2}(tensor), G.HBSplineBasis{2}(tensor)
+            G.refineElements!(thb, corner)
+            G.refineElements!(hb, corner)
+            @test G.size(thb) == G.size(hb)
+            # Only the truncated basis is a partition of unity over the refined region. If the
+            # `Trunc` template parameter were not threaded through, both names would alias the
+            # same instantiation and this would not hold.
+            @test sum(mat(G._eval(thb, [0.125, 0.125]))) ≈ 1.0
+            @test !(sum(mat(G._eval(hb, [0.125, 0.125]))) ≈ 1.0)
+        end
+
+        @testset "elementBoxes tile the domain" begin
+            b = G.THBSplineBasis{2}(tensor)
+            G.refineElements!(b, corner)
+            boxes = mat(G.elementBoxes(b))
+            @test size(boxes) == (4, G.numElements(b))
+            lower, upper = boxes[1:2, :], boxes[3:4, :]
+            @test sum(prod(upper .- lower; dims = 1)) ≈ 1.0
+            @test count(a -> isapprox(a, 0.125^2), prod(upper .- lower; dims = 1)) == 4
+        end
+
+        @testset "knotSpans refuses rather than dangling" begin
+            # gsHDomainIterator cannot be safely copied upstream -- its element cursor points
+            # into storage a copy does not own -- so the gsBasis version is shadowed by one
+            # that raises.
+            @test_throws Exception G.knotSpans(G.THBSplineBasis{2}(tensor))
+        end
+
+        @testset "malformed boxes are rejected" begin
+            b = G.THBSplineBasis{2}(tensor)
+            @test_throws Exception G.refineElements!(b, Int64[2, 1, 1, 2])    # short box
+            @test_throws Exception G.refineElements!(b, Int64[0, 1, 1, 2, 2]) # level below 1
+            @test_throws Exception G.refineElements!(b, Int64[2, 0, 1, 2, 2]) # corner below 1
+            @test_throws Exception G.refineElements!(b, Int64[2, 3, 3, 2, 2]) # upper < lower
+            @test_throws Exception G.tensorLevel(b, 0)
+        end
+
+        @testset "refineElements_withCoefs! keeps the function fixed" begin
+            b = G.THBSplineBasis{2}(tensor)
+            coefs = [Float64(i + j) for i in 1:G.size(b), j in 1:3]
+            before = mat(G.evalFunc(b, [0.6, 0.6], coefs))
+            refined = mat(G.refineElements_withCoefs!(b, coefs, corner))
+            @test size(refined, 1) == G.size(b) > size(coefs, 1)
+            @test mat(G.evalFunc(b, [0.6, 0.6], refined)) ≈ before
+        end
+
+        @testset "geometries" begin
+            b = G.THBSplineBasis{2}(tensor)
+            coefs = [Float64(i + 2j) for i in 1:G.size(b), j in 1:3]
+            geo = G.THBSpline{2}(b, coefs)
+            @test G.numCoefs(geo) == G.size(b)
+            @test G.size(G.basis(geo)) == G.size(b)
+
+            before = evalat(geo, [0.6, 0.6])
+            G.refineElements!(geo, corner)
+            @test G.numCoefs(geo) > G.size(b)
+            @test evalat(geo, [0.6, 0.6]) ≈ before   # refinement is exact
+
+            # convertToBSpline has no bang, so it must not touch its argument -- upstream
+            # gsTHBSpline::convertToBSpline refines *this, which the binding works around.
+            n = G.numCoefs(geo)
+            flat = G.convertToBSpline(geo)
+            @test G.numCoefs(geo) == n
+            @test evalat(flat, [0.6, 0.6]) ≈ before
+        end
+
+        @testset "univariate and trivariate" begin
+            b1 = G.THBSplineBasis{1}(G.BSplineBasis(kv))
+            G.refineElements!(b1, Int64[2, 1, 2])
+            @test G.numLevels(b1) == 2
+            @test sum(mat(G._eval(b1, [0.125]))) ≈ 1.0
+
+            b3 = G.THBSplineBasis{3}(G.TensorBSplineBasis{3}(kv, kv, kv))
+            G.refineElements!(b3, Int64[2, 1, 1, 1, 2, 2, 2])
+            @test G.numLevels(b3) == 2
+            @test sum(mat(G._eval(b3, [0.125, 0.125, 0.125]))) ≈ 1.0
+        end
+    end
 end

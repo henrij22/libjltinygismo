@@ -13,11 +13,13 @@ set(JLTINYGISMO_SOURCES
     ${JLTINYGISMO_SOURCE_DIR}/basis/bsplinebasis.cpp
     ${JLTINYGISMO_SOURCE_DIR}/basis/nurbsbasis.cpp
     ${JLTINYGISMO_SOURCE_DIR}/basis/knotvector.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/basis/hierarchicalbasis.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/bspline.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/nurbs.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/tensorbspline.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/tensornurbs.cpp
     ${JLTINYGISMO_SOURCE_DIR}/geometry/gsGeometry.cpp
+    ${JLTINYGISMO_SOURCE_DIR}/geometry/hierarchicalspline.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/utilities.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/nurbsCreator.cpp
     ${JLTINYGISMO_SOURCE_DIR}/utility/filereader.cpp

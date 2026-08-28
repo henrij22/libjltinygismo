@@ -41,4 +41,20 @@ void registerFileReaderFunctions(jlcxx::Module& mod) {
   registerFileReaderFunctions_IMPL<gismo::gsNurbs<>>(mod);
   registerFileReaderFunctions_IMPL<gismo::gsTensorNurbs<2>>(mod);
   registerFileReaderFunctions_IMPL<gismo::gsTensorNurbs<3>>(mod);
+
+  registerFileReaderFunctions_IMPL<gismo::gsTHBSplineBasis<1>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsTHBSplineBasis<2>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsTHBSplineBasis<3>>(mod);
+
+  registerFileReaderFunctions_IMPL<gismo::gsHBSplineBasis<1>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsHBSplineBasis<2>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsHBSplineBasis<3>>(mod);
+
+  registerFileReaderFunctions_IMPL<gismo::gsTHBSpline<1>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsTHBSpline<2>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsTHBSpline<3>>(mod);
+
+  registerFileReaderFunctions_IMPL<gismo::gsHBSpline<1>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsHBSpline<2>>(mod);
+  registerFileReaderFunctions_IMPL<gismo::gsHBSpline<3>>(mod);
 }

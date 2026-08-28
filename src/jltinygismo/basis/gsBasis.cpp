@@ -217,7 +217,11 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
   // elements
   basis.method("knotSpans", [](const Basis& basis) {
     jlcxx::Array<gismo::gsDomainIteratorWrapper<>> elements{};
-    for (auto it = basis.domain()->beginAll(); it != basis.domain()->endAll(); ++it) {
+    // The domain has to be held in a named local. gsHTensorBasis::domain() builds a fresh
+    // gsHDomain on every call, so calling it inside the loop condition would both allocate a new
+    // domain per step and leave the iterators pointing into destroyed ones.
+    auto domain = basis.domain();
+    for (auto it = domain->beginAll(); it != domain->endAll(); ++it) {
       elements.push_back(it); // Construct wrapper from iterator
     }
     return elements;
