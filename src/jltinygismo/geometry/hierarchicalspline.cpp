@@ -8,10 +8,8 @@
 
 #include "registergeometries.hh"
 
-/// Wraps gsTHBSpline<d,double,Trunc>, the geometry counterpart of gsTHBSplineBasis.
-///
-/// As on the basis side, gsHBSpline is `gsTHBSpline<d,T,false>` rather than a class of its own,
-/// so truncated and plain hierarchical geometries come out of this one functor.
+/// Wraps gsTHBSpline<d,double,Trunc>, the geometry counterpart of gsTHBSplineBasis. As on the
+/// basis side, gsHBSpline is `gsTHBSpline<d,T,false>`, so one functor covers both flavours.
 struct WrapHierarchicalSpline
 {
   template <typename T>
@@ -41,8 +39,7 @@ struct WrapHierarchicalSpline
 
     spline.constructor([](const Basis& basis, gismo::gsMatrix<>& coefs) { return new Spline{basis, coefs}; });
 
-    // Lift a tensor B-spline geometry into the hierarchical setting, unchanged but now refinable
-    // locally.
+    // Lift a tensor B-spline geometry: unchanged, but now refinable locally.
     spline.constructor([](const gismo::gsTensorBSpline<d>& tensorSpline) { return new Spline{tensorSpline}; });
 
     // ---------------------------------------------------------------- queries
@@ -62,8 +59,8 @@ struct WrapHierarchicalSpline
 
     // ---------------------------------------------------------------- refinement
 
-    // These go through gsGeometry, which refines the basis and carries the control points along,
-    // so the geometry is unchanged as a map -- only its representation gets finer.
+    // Via gsGeometry, which carries the control points along, so the geometry is unchanged as a
+    // map -- only its representation gets finer.
     spline.method(
         "refineElements!",
         [](Spline& spline, JuliaBoxes boxes) { spline.refineElements(toGismoBoxes<d>(boxes, "refineElements!")); },
@@ -79,12 +76,9 @@ struct WrapHierarchicalSpline
         [](Spline& spline, int numKnots = 1, int mul = 1) { spline.uniformRefine(numKnots, mul); }, arg("spline"),
         arg("numKnots") = 1, arg("mul") = 1);
 
-    // Refines the whole domain to the finest level present, giving back an equivalent tensor
-    // B-spline geometry.
-    // gsTHBSpline::convertToBSpline refines *this to the finest level before copying the result
-    // out, so it silently rewrites the geometry it is called on. That would make a non-bang
-    // method mutate its argument, against the convention everywhere else here, so it runs on a
-    // copy and leaves the caller's geometry alone.
+    // Refines the whole domain to the finest level present, giving an equivalent tensor B-spline.
+    // gsTHBSpline::convertToBSpline does that to *this before copying the result out, which would
+    // make a non-bang method mutate its argument -- so it runs on a copy.
     spline.method(
         "convertToBSpline",
         [](const Spline& spline) {

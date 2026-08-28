@@ -90,11 +90,9 @@ template <typename Scalar>
 inline void incrementByOne(gismo::gsVector<Scalar>& vec) {
   std::for_each(vec.begin(), vec.end(), [](auto& i) { i += 1; });
 }
-/// Reject a level that is outside the levels a hierarchical basis actually has.
-///
-/// Levels are 1-based on the Julia side, so they run `1:numLevels`. G+Smo indexes its level
-/// containers without bounds checking, so an out-of-range level reaches it as an out-of-bounds
-/// read rather than an error.
+/// Reject a level outside the levels a hierarchical basis has. Levels are 1-based here, so they
+/// run `1:numLevels`. G+Smo indexes its level containers unchecked, so an out-of-range level
+/// would reach it as an out-of-bounds read rather than an error.
 inline void checkLevel(int level, index_t numLevels, const char* fname) {
   if (level < 1 || level > static_cast<int>(numLevels))
     throw std::runtime_error(std::string{fname} + ": level must be in 1:" + std::to_string(numLevels) + ", got " +
@@ -110,14 +108,11 @@ inline void checkCoefRows(index_t rows, index_t basisSize, const char* fname) {
 
 /// Translate Julia-side element boxes into the flat index vector G+Smo's refineElements expects.
 ///
-/// Both formats are flat arrays of `2d+1` entries per box, `[level, lower..., upper...]`, but the
-/// conventions differ. G+Smo uses a 0-based level and 0-based knot span indices on the grid of
-/// that level, with the upper corner *exclusive*. Julia-side, following the rest of these
-/// bindings, the level is 1-based and the corners are 1-based and *inclusive*, so a box addresses
-/// the cell range `lower:upper` on its level and reads like an ordinary Julia range.
-///
-/// That makes the upper corner the one entry that is not shifted: an inclusive 1-based upper
-/// bound is already the exclusive 0-based one.
+/// Both are flat arrays of `2d+1` entries per box, `[level, lower..., upper...]`. G+Smo uses a
+/// 0-based level and 0-based span indices on that level's grid, upper corner *exclusive*;
+/// Julia-side both are 1-based and the corners *inclusive*, so a box reads as the cell range
+/// `lower:upper`. The upper corner is therefore the one entry not shifted -- an inclusive
+/// 1-based bound is already the exclusive 0-based one.
 template <int d>
 inline std::vector<index_t> toGismoBoxes(jlcxx::ArrayRef<int64_t, 1> boxes, const char* fname) {
   constexpr std::size_t stride = 2 * d + 1;

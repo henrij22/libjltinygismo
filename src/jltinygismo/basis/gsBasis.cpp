@@ -205,10 +205,7 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
       "uniformRefine_withCoefs!",
       [](Basis& basis, JuliaMatrix coefs, int numKnots = 1, int mul = 1) {
         gismo::gsMatrix<double> coefsMat{wrapMatrix(coefs)};
-        if (coefsMat.rows() != basis.size())
-          throw std::runtime_error("uniformRefine_withCoefs!: coefs has " + std::to_string(coefsMat.rows()) +
-                                   " rows but the basis has " + std::to_string(basis.size()) + " functions");
-
+        checkCoefRows(coefsMat.rows(), basis.size(), "uniformRefine_withCoefs!");
         basis.uniformRefine_withCoefs(coefsMat, numKnots, mul);
         return coefsMat;
       },
@@ -217,9 +214,9 @@ jlcxx::TypeWrapper<gismo::gsBasis<double>> registerBasis(jlcxx::Module& mod) {
   // elements
   basis.method("knotSpans", [](const Basis& basis) {
     jlcxx::Array<gismo::gsDomainIteratorWrapper<>> elements{};
-    // The domain has to be held in a named local. gsHTensorBasis::domain() builds a fresh
-    // gsHDomain on every call, so calling it inside the loop condition would both allocate a new
-    // domain per step and leave the iterators pointing into destroyed ones.
+    // Held in a named local: gsHTensorBasis::domain() builds a fresh gsHDomain per call, so
+    // calling it in the loop condition would allocate one per step and leave the iterators
+    // pointing into destroyed ones.
     auto domain = basis.domain();
     for (auto it = domain->beginAll(); it != domain->endAll(); ++it) {
       elements.push_back(it); // Construct wrapper from iterator

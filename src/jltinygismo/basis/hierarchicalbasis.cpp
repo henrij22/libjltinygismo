@@ -14,10 +14,9 @@
 
 /// Wraps gsTHBSplineBasis<d,double,Trunc>.
 ///
-/// gsHBSplineBasis is not a class of its own: G+Smo declares it as
-/// `using gsHBSplineBasis = gsTHBSplineBasis<d,T,false>`, so the truncated and the plain
-/// hierarchical basis are the same template with a different `Trunc` flag and this one functor
-/// covers both. They are still distinct C++ types, so they map to distinct Julia types.
+/// gsHBSplineBasis is not a class of its own -- G+Smo declares it as
+/// `using gsHBSplineBasis = gsTHBSplineBasis<d,T,false>` -- so one functor covers both flavours.
+/// They remain distinct C++ types and so map to distinct Julia types.
 struct WrapHierarchicalBasis
 {
   template <typename T>
@@ -63,23 +62,17 @@ struct WrapHierarchicalBasis
     basis.method("maxDegree", [](const Basis& basis) { return basis.maxDegree(); }, arg("basis"));
     basis.method("minDegree", [](const Basis& basis) { return basis.minDegree(); }, arg("basis"));
 
-    // Number of levels present. Levels are 1-based here, so they run 1:numLevels(basis) and the
-    // finest one is numLevels(basis) -- in C++ that same level is maxLevel(), which is 0-based.
+    // Levels are 1-based here, running 1:numLevels(basis). C++ calls that finest level
+    // maxLevel(), which is 0-based.
     basis.method("numLevels", [](const Basis& basis) { return basis.numLevels(); }, arg("basis"));
 
     basis.method("treeSize", [](const Basis& basis) { return basis.treeSize(); }, arg("basis"));
 
-    // Element enumeration.
-    //
-    // knotSpans, registered on gsBasis, cannot be used for a hierarchical basis. It hands Julia
-    // clones of a gsDomainIterator, and gsHDomainIterator is not safely copyable upstream: its
-    // m_curElement holds std::vector iterators into its own m_breaks, and the defaulted copy
-    // constructor copies both, so every clone's iterators point into the *source's* break
-    // storage. Dereferencing one reads freed memory. gsHTensorBasis::domain() compounds this by
-    // manufacturing a fresh gsHDomain per call, which then dies at the end of the expression.
-    //
-    // So the elements are read out eagerly here instead, while the one live iterator is valid,
-    // and returned as owned data.
+    // knotSpans, registered on gsBasis, hands Julia clones of a gsDomainIterator, and
+    // gsHDomainIterator is not safely copyable upstream: m_curElement holds std::vector iterators
+    // into its own m_breaks, and the defaulted copy constructor copies both, so a clone
+    // dereferences the *source's* storage. The elements are therefore read out eagerly below,
+    // from the one live iterator, and returned as owned data.
     basis.method(
         "knotSpans",
         [](const Basis&) -> jlcxx::Array<gismo::gsDomainIteratorWrapper<>> {
@@ -118,8 +111,8 @@ struct WrapHierarchicalBasis
         "levelAtCorner", [](const Basis& basis, int c) { return basis.levelAtCorner(gismo::boxCorner{c}) + 1; },
         arg("basis"), arg("c"));
 
-    // The tensor B-spline basis underlying one level. Returned by value: tensorLevel hands back a
-    // reference into the hierarchical basis, which Julia must not take ownership of.
+    // Returned by value: tensorLevel hands back a reference into the hierarchical basis, which
+    // Julia must not own.
     basis.method(
         "tensorLevel",
         [](const Basis& basis, int level) -> TensorBasis {
@@ -156,9 +149,9 @@ struct WrapHierarchicalBasis
         [](Basis& basis, JuliaBoxes boxes) { basis.unrefineElements(toGismoBoxes<d>(boxes, "unrefineElements!")); },
         arg("basis"), arg("boxes"));
 
-    // The _withCoefs variants refine the basis in place and return the matching coefficients.
-    // The coefficients cannot be updated in place: refinement changes the number of control
-    // points, so the result has a different number of rows than the input array.
+    // The _withCoefs variants refine in place and return the matching coefficients. Those cannot
+    // be updated in place: refinement changes the number of control points, so the result has a
+    // different number of rows than the input.
     basis.method(
         "refineElements_withCoefs!",
         [](Basis& basis, JuliaMatrix coefs, JuliaBoxes boxes) {
@@ -219,9 +212,9 @@ struct BuildParameterList<gismo::gsTHBSplineBasis<d, T, Trunc>>
   using type = ParameterList<std::integral_constant<int64_t, d>, T>;
 };
 
-// Flat hierarchy, as for gsTensorBSplineBasis: the concrete types upcast straight to gsBasis and
-// gsHTensorBasis is not itself a Julia type. Must be declared before the add_type calls below --
-// a SuperType specialization that comes too late fails at run time, not at compile time.
+// Flat hierarchy, as for gsTensorBSplineBasis: gsHTensorBasis is not itself a Julia type. Must
+// come before the add_type calls below -- a late SuperType specialization fails at run time, not
+// at compile time.
 template <int d, bool Trunc>
 struct SuperType<gismo::gsTHBSplineBasis<d, double, Trunc>>
 {
