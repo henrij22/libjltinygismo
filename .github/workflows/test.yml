@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v7
            
       - name: Check gismo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: gismo-cache
         with:
           path: /tmp/gismo-install
@@ -82,7 +82,7 @@ jobs:
             libboost-all-dev
       
       - name: Download gismo installation
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /tmp/gismo-install
           key: gismo-v25.07.0-${{ runner.os }}
