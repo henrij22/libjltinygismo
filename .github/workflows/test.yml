@@ -18,9 +18,9 @@ jobs:
         id: gismo-cache
         with:
           path: /tmp/gismo-install
-          key: gismo-v25.07.0-${{ runner.os }}
+          key: gismo-v26.09.0-${{ runner.os }}
           restore-keys: |
-            gismo-v25.07.0-${{ runner.os }}
+            gismo-v26.09.0-${{ runner.os }}
       
       - name: Install system dependencies
         if: steps.gismo-cache.outputs.cache-hit != 'true'
@@ -85,9 +85,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/gismo-install
-          key: gismo-v25.07.0-${{ runner.os }}
+          key: gismo-v26.09.0-${{ runner.os }}
           restore-keys: |
-            gismo-v25.07.0-${{ runner.os }}
+            gismo-v26.09.0-${{ runner.os }}
       
       - name: Set up Julia ${{ matrix.julia-version }}
         uses: julia-actions/setup-julia@v2
