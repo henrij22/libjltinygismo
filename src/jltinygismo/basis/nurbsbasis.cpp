@@ -59,6 +59,10 @@ struct WrapTensorNURBSBasis
 
     basis.method("size", [](const Basis& basis) { return basis.size(); }, arg("basis"));
 
+    // Weights, one per basis function
+    basis.method("weight", [](const Basis& basis, int i) { return basis.weight(i - 1); }, arg("basis"), arg("i"));
+    basis.method("weights", [](const Basis& basis) { return basis.weights(); }, arg("basis"));
+
     if constexpr (n == 1) {
       // Refinement
       basis.method(

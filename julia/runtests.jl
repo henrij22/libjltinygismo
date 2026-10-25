@@ -241,6 +241,17 @@ const QUADRATIC = [0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0]
         tnb3 = G.TensorNurbsBasis{3}(kvu, kvv, kvv, ones(12, 1))
         @test G.size(tnb3) == 12
         @test G.numActive(tnb3) == 12
+
+        @testset "weights" begin
+            w = reshape(collect(1.0:6.0), 6, 1)
+            tnb = G.TensorNurbsBasis{2}(kvu, kvv, w)
+            @test mat(G.weights(tnb)) ≈ w
+            @test G.weight(tnb, 2) ≈ 2.0
+
+            nb = G.NurbsBasis(kvu, [1.0, sqrt(2) / 2, 1.0])
+            @test vec_(G.weights(nb)) ≈ [1.0, sqrt(2) / 2, 1.0]
+            @test G.weight(nb, 1) ≈ 1.0
+        end
     end
 
     @testset "BSpline geometry" begin
@@ -315,6 +326,9 @@ const QUADRATIC = [0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0]
         @test length(weights) == 9
         @test G.weight(circle, 2) ≈ weights[2]
         @test weights[2] ≈ sqrt(2) / 2
+
+        # The basis carries the same weights, e.g. for a field defined on it
+        @test vec_(G.weights(G.basis(circle))) ≈ weights
     end
 
     @testset "Tensor geometries" begin
