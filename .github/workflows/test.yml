@@ -53,6 +53,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/tmp/gismo-install \
             -DGISMO_BUILD_LIB=ON \
+            -DGISMO_BUILD_EXAMPLES=OFF \
             -DGISMO_WITH_MKDE=OFF \
             -DGISMO_WITH_OPENMP=ON
           
